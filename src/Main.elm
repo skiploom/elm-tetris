@@ -10,22 +10,25 @@ import Html.Events exposing (onClick)
 
 
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+    Browser.sandbox { init = init, update = update, view = view }
 
 
 
 -- MODEL
 
 
-type alias Model = Tetromino
+type alias Model =
+    Tetromino
+
 
 type Tetromino
     = I
     | O
 
+
 init : Model
 init =
-  I
+    I
 
 
 
@@ -33,14 +36,14 @@ init =
 
 
 type Msg
-  = NewPiece
+    = NewPiece
 
 
 update : Msg -> Model -> Model
 update msg model =
-  case msg of
-    NewPiece ->
-      O
+    case msg of
+        NewPiece ->
+            O
 
 
 
@@ -62,6 +65,8 @@ showPiece model =
             div [] [ text "■■■■" ]
 
         O ->
-            div [] [ text "■■"
-                   , br [] []
-                   , text "■■" ]
+            div []
+                [ text "■■"
+                , br [] []
+                , text "■■"
+                ]
