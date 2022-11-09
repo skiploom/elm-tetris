@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html, br, button, div, text)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 
 
@@ -18,17 +19,31 @@ main =
 
 
 type alias Model =
+    Piece
+
+
+type alias Piece =
     Tetromino
 
 
+{-| <https://en.wikipedia.org/wiki/Tetromino>
+-}
 type Tetromino
     = I
     | O
 
 
+type Bag
+    = Set Tetromino
+
+
+type Playfield
+    = Int
+
+
 init : Model
 init =
-    I
+    O
 
 
 
@@ -43,7 +58,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         NewPiece ->
-            O
+            I
 
 
 
@@ -53,8 +68,25 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ showPiece model
+        [ showPlayField
+        , showPiece model
         , button [ onClick NewPiece ] [ text "New Piece." ]
+        ]
+
+showPlayField : Html Msg
+showPlayField =
+    div [ style "font-family" "monospace" ]
+        [ text "``````"
+        , br [] []
+        , text "``````"
+        , br [] []
+        , text "``````"
+        , br [] []
+        , text "``````"
+        , br [] []
+        , text "``````"
+        , br [] []
+        , text "``````"
         ]
 
 
@@ -62,11 +94,11 @@ showPiece : Model -> Html Msg
 showPiece model =
     case model of
         I ->
-            div [] [ text "■■■■" ]
+            div [] [ text "IIII" ]
 
         O ->
             div []
-                [ text "■■"
+                [ text "OO"
                 , br [] []
-                , text "■■"
+                , text "OO"
                 ]

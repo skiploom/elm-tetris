@@ -1,1 +1,4 @@
 elm-stuff
+
+# temporarily ignore auto-generated js
+elm.js
