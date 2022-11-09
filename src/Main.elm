@@ -1,10 +1,12 @@
 module Main exposing (..)
 
+import Array exposing (Array)
 import Browser
 import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Random
+import Time
 
 
 
@@ -20,7 +22,12 @@ main =
 
 
 type alias Model =
-    ( Piece, Playfield )
+    { piece : Piece
+    , playfield : Playfield
+    , secondsElapsed : SecondsElapsed
+    , activePieceMask : Playfield
+    , currentPosition : Position
+    }
 
 
 type alias Piece =
@@ -39,12 +46,32 @@ type Bag
 
 
 type alias Playfield =
-    List (List String)
+    Array (Array String)
+
+
+type alias SecondsElapsed =
+    Int
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( ( O, emptyPlayfield ), Cmd.none )
+    ( { piece = O
+      , playfield = emptyPlayfield
+      , secondsElapsed = 0
+      , activePieceMask = emptyPlayfield
+      , currentPosition =
+            { one = ( 0, 1 )
+            , two = ( 0, 2 )
+            , three = ( 1, 1 )
+            , four = ( 1, 2 )
+            }
+      }
+    , Cmd.none
+    )
+
+
+type alias Position =
+    { one : ( Int, Int ), two : ( Int, Int ), three : ( Int, Int ), four : ( Int, Int ) }
 
 
 
@@ -53,17 +80,25 @@ init _ =
 
 type Msg
     = ActivePiece Piece
+    | AddPiece
     | NewPiece
+    | Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ( piece, playfield ) =
+update msg ({ piece, playfield, secondsElapsed } as model) =
     case msg of
         ActivePiece piece_ ->
-            ( ( piece_, playfield ), Cmd.none )
+            ( { model | piece = piece_ }, Cmd.none )
+
+        AddPiece ->
+            ( { model | playfield = addPieceToPlayfield piece playfield secondsElapsed }, Cmd.none )
 
         NewPiece ->
-            ( ( piece, playfield ), Random.generate ActivePiece randomPiece )
+            ( model, Random.generate ActivePiece randomPiece )
+
+        Tick time ->
+            ( { model | secondsElapsed = secondsElapsed + 1 }, Cmd.none )
 
 
 
@@ -71,9 +106,10 @@ update msg ( piece, playfield ) =
 
 
 view : Model -> Html Msg
-view ( piece, playfield ) =
+view { piece, playfield } =
     div []
         [ showPlayfield playfield
+        , button [ onClick AddPiece ] [ text "Add Piece." ]
         , button [ onClick NewPiece ] [ text "New Piece." ]
         , showPiece piece
         ]
@@ -81,24 +117,25 @@ view ( piece, playfield ) =
 
 emptyPlayfield : Playfield
 emptyPlayfield =
-    [ [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    ]
+    Array.fromList
+        [ Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        ]
 
 
 showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
     div [ style "font-family" "monospace" ]
-        (List.map showRow playfield)
+        (Array.toList (Array.map showRow playfield))
 
 
-showRow : List String -> Html Msg
+showRow : Array String -> Html Msg
 showRow row =
-    div [] [ text (String.join "" row) ]
+    div [] [ text (String.join "" (Array.toList row)) ]
 
 
 showPiece : Piece -> Html Msg
@@ -138,15 +175,30 @@ textPiece piece =
             ]
 
 
-addPieceToPlayfield : Piece -> Playfield -> Playfield
-addPieceToPlayfield piece playfield =
-    [ [ "`", "I", "I", "I", "I", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    , [ "`", "`", "`", "`", "`", "`" ]
-    ]
+addPieceToPlayfield : Piece -> Playfield -> SecondsElapsed -> Playfield
+addPieceToPlayfield piece playfield secondsElapsed =
+    let
+        row =
+            if secondsElapsed > 5 then
+                5
+
+            else
+                secondsElapsed
+
+        activePieceMask =
+            Array.fromList [ Array.fromList [ "I", "I", "I", "I" ] ]
+
+        redrawn =
+            emptyPlayfield
+    in
+    Array.fromList
+        [ Array.fromList [ "`", "I", "I", "I", "I", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
+        ]
 
 
 
@@ -155,4 +207,4 @@ addPieceToPlayfield piece playfield =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 1000 Tick
