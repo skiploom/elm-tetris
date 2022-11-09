@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Random
 
 
 
@@ -11,7 +12,7 @@ import Html.Events exposing (onClick)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init, subscriptions = subscriptions, update = update, view = view }
 
 
 
@@ -19,7 +20,7 @@ main =
 
 
 type alias Model =
-    Piece
+    ( Piece, Playfield )
 
 
 type alias Piece =
@@ -37,13 +38,13 @@ type Bag
     = Set Tetromino
 
 
-type Playfield
-    = Int
+type alias Playfield =
+    List (List String)
 
 
-init : Model
-init =
-    O
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( ( O, emptyPlayfield ), Cmd.none )
 
 
 
@@ -51,14 +52,18 @@ init =
 
 
 type Msg
-    = NewPiece
+    = ActivePiece Piece
+    | NewPiece
 
 
-update : Msg -> Model -> Model
-update msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg ( piece, playfield ) =
     case msg of
+        ActivePiece piece_ ->
+            ( ( piece_, playfield ), Cmd.none )
+
         NewPiece ->
-            I
+            ( ( piece, playfield ), Random.generate ActivePiece randomPiece )
 
 
 
@@ -66,33 +71,39 @@ update msg model =
 
 
 view : Model -> Html Msg
-view model =
+view ( piece, playfield ) =
     div []
-        [ showPlayField
-        , showPiece model
+        [ showPlayfield playfield
         , button [ onClick NewPiece ] [ text "New Piece." ]
+        , showPiece piece
         ]
 
-showPlayField : Html Msg
-showPlayField =
+
+emptyPlayfield : Playfield
+emptyPlayfield =
+    [ [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    ]
+
+
+showPlayfield : Playfield -> Html Msg
+showPlayfield playfield =
     div [ style "font-family" "monospace" ]
-        [ text "``````"
-        , br [] []
-        , text "``````"
-        , br [] []
-        , text "``````"
-        , br [] []
-        , text "``````"
-        , br [] []
-        , text "``````"
-        , br [] []
-        , text "``````"
-        ]
+        (List.map showRow playfield)
 
 
-showPiece : Model -> Html Msg
-showPiece model =
-    case model of
+showRow : List String -> Html Msg
+showRow row =
+    div [] [ text (String.join "" row) ]
+
+
+showPiece : Piece -> Html Msg
+showPiece piece =
+    case piece of
         I ->
             div [] [ text "IIII" ]
 
@@ -102,3 +113,46 @@ showPiece model =
                 , br [] []
                 , text "OO"
                 ]
+
+
+drawPiece : List String -> List (Html Msg)
+drawPiece pieceStrings =
+    List.map (\str -> text str) pieceStrings
+
+
+randomPiece : Random.Generator Piece
+randomPiece =
+    Random.uniform I [ O ]
+
+
+textPiece : Piece -> List (List String)
+textPiece piece =
+    case piece of
+        I ->
+            [ [ "I", "I", "I", "I" ]
+            ]
+
+        O ->
+            [ [ "O", "O" ]
+            , [ "O", "O" ]
+            ]
+
+
+addPieceToPlayfield : Piece -> Playfield -> Playfield
+addPieceToPlayfield piece playfield =
+    [ [ "`", "I", "I", "I", "I", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    , [ "`", "`", "`", "`", "`", "`" ]
+    ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
