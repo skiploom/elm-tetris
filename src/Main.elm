@@ -128,12 +128,12 @@ leftLimit =
 
 rightLimit : Int
 rightLimit =
-    5
+    9
 
 
 downLimit : Int
 downLimit =
-    5
+    19
 
 
 
@@ -155,7 +155,7 @@ view { playfield, activePiece } =
 
 emptyPlayfield : Playfield
 emptyPlayfield =
-    Array.repeat 6 (Array.repeat 6 "`")
+    Array.repeat (downLimit + 1) (Array.repeat (rightLimit + 1) "`")
 
 
 showPlayfield : Playfield -> Html Msg
