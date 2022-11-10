@@ -5,7 +5,6 @@ import Browser
 import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Random
 import Time
 
 
@@ -22,27 +21,10 @@ main =
 
 
 type alias Model =
-    { piece : Piece
-    , playfield : Playfield
+    { playfield : Playfield
     , secondsElapsed : SecondsElapsed
-    , activePieceMask : Playfield
-    , currentPosition : Position
+    , activePiece : Piece
     }
-
-
-type alias Piece =
-    Tetromino
-
-
-{-| <https://en.wikipedia.org/wiki/Tetromino>
--}
-type Tetromino
-    = I
-    | O
-
-
-type Bag
-    = Set Tetromino
 
 
 type alias Playfield =
@@ -53,25 +35,28 @@ type alias SecondsElapsed =
     Int
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { piece = O
-      , playfield = emptyPlayfield
-      , secondsElapsed = 0
-      , activePieceMask = emptyPlayfield
-      , currentPosition =
-            { one = ( 0, 1 )
-            , two = ( 0, 2 )
-            , three = ( 1, 1 )
-            , four = ( 1, 2 )
-            }
-      }
-    , Cmd.none
-    )
+type Piece
+    = O Position
 
 
 type alias Position =
-    { one : ( Int, Int ), two : ( Int, Int ), three : ( Int, Int ), four : ( Int, Int ) }
+    ( Int, Int )
+
+
+type WhichWay
+    = L
+    | R
+    | D
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { playfield = emptyPlayfield
+      , secondsElapsed = 0
+      , activePiece = O ( 1, 0 )
+      }
+    , Cmd.none
+    )
 
 
 
@@ -79,26 +64,76 @@ type alias Position =
 
 
 type Msg
-    = ActivePiece Piece
-    | AddPiece
-    | NewPiece
-    | Tick Time.Posix
+    = Tick Time.Posix
+    | Left
+    | Right
+    | Down
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ piece, playfield, secondsElapsed } as model) =
+update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
-        ActivePiece piece_ ->
-            ( { model | piece = piece_ }, Cmd.none )
+        Down ->
+            ( { model | activePiece = movePiece activePiece D }, Cmd.none )
 
-        AddPiece ->
-            ( { model | playfield = addPieceToPlayfield piece playfield secondsElapsed }, Cmd.none )
+        Left ->
+            ( { model | activePiece = movePiece activePiece L }, Cmd.none )
 
-        NewPiece ->
-            ( model, Random.generate ActivePiece randomPiece )
+        Right ->
+            ( { model | activePiece = movePiece activePiece R }, Cmd.none )
 
         Tick time ->
             ( { model | secondsElapsed = secondsElapsed + 1 }, Cmd.none )
+
+
+movePiece : Piece -> WhichWay -> Piece
+movePiece piece whichWay =
+    case whichWay of
+        L ->
+            O <| Tuple.mapFirst goLeft (getPosition piece)
+
+        R ->
+            O <| Tuple.mapFirst goRight (getPosition piece)
+
+        D ->
+            O <| Tuple.mapSecond goDown (getPosition piece)
+
+
+goLeft : Int -> Int
+goLeft curr =
+    max leftLimit (curr - 1)
+
+
+goRight : Int -> Int
+goRight curr =
+    min rightLimit (curr + 1)
+
+
+goDown : Int -> Int
+goDown curr =
+    min downLimit (curr + 1)
+
+
+getPosition : Piece -> Position
+getPosition piece =
+    case piece of
+        O position ->
+            position
+
+
+leftLimit : Int
+leftLimit =
+    0
+
+
+rightLimit : Int
+rightLimit =
+    5
+
+
+downLimit : Int
+downLimit =
+    5
 
 
 
@@ -106,25 +141,21 @@ update msg ({ piece, playfield, secondsElapsed } as model) =
 
 
 view : Model -> Html Msg
-view { piece, playfield } =
+view { playfield, activePiece } =
     div []
         [ showPlayfield playfield
-        , button [ onClick AddPiece ] [ text "Add Piece." ]
-        , button [ onClick NewPiece ] [ text "New Piece." ]
-        , showPiece piece
+        , button [ onClick Down ] [ text "Down." ]
+        , button [ onClick Left ] [ text "<-" ]
+        , button [ onClick Right ] [ text "->" ]
+        , br [] []
+        , br [] []
+        , showPieceAndPlayfieldWIP playfield activePiece
         ]
 
 
 emptyPlayfield : Playfield
 emptyPlayfield =
-    Array.fromList
-        [ Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        ]
+    Array.repeat 6 (Array.repeat 6 "`")
 
 
 showPlayfield : Playfield -> Html Msg
@@ -138,67 +169,29 @@ showRow row =
     div [] [ text (String.join "" (Array.toList row)) ]
 
 
-showPiece : Piece -> Html Msg
-showPiece piece =
-    case piece of
-        I ->
-            div [] [ text "IIII" ]
-
-        O ->
-            div []
-                [ text "OO"
-                , br [] []
-                , text "OO"
-                ]
-
-
-drawPiece : List String -> List (Html Msg)
-drawPiece pieceStrings =
-    List.map (\str -> text str) pieceStrings
-
-
-randomPiece : Random.Generator Piece
-randomPiece =
-    Random.uniform I [ O ]
-
-
-textPiece : Piece -> List (List String)
-textPiece piece =
-    case piece of
-        I ->
-            [ [ "I", "I", "I", "I" ]
-            ]
-
-        O ->
-            [ [ "O", "O" ]
-            , [ "O", "O" ]
-            ]
-
-
-addPieceToPlayfield : Piece -> Playfield -> SecondsElapsed -> Playfield
-addPieceToPlayfield piece playfield secondsElapsed =
+showPieceAndPlayfieldWIP : Playfield -> Piece -> Html Msg
+showPieceAndPlayfieldWIP playfield piece =
     let
-        row =
-            if secondsElapsed > 5 then
-                5
-
-            else
-                secondsElapsed
-
-        activePieceMask =
-            Array.fromList [ Array.fromList [ "I", "I", "I", "I" ] ]
-
-        redrawn =
+        playfield_ =
             emptyPlayfield
+
+        (O ( x, y )) =
+            piece
+
+        playfieldWithClearedPiece =
+            Array.get y playfield
+                |> Maybe.withDefault Array.empty
+                |> Array.set x "`"
+                |> (\newRow -> Array.set y newRow playfield)
+
+        newPlayfield =
+            Array.get y playfieldWithClearedPiece
+                |> Maybe.withDefault Array.empty
+                |> Array.set x "o"
+                |> (\newRow -> Array.set y newRow playfieldWithClearedPiece)
     in
-    Array.fromList
-        [ Array.fromList [ "`", "I", "I", "I", "I", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        , Array.fromList [ "`", "`", "`", "`", "`", "`" ]
-        ]
+    -- div [] [ text <| String.concat [ "(", String.fromInt x, ", ", String.fromInt y, ")" ] ]
+    showPlayfield newPlayfield
 
 
 
