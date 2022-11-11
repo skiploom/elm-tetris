@@ -51,7 +51,7 @@ type WhichWay
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { playfield = emptyPlayfield
+    ( { playfield = initPlayfield
       , secondsElapsed = 0
       , activePiece = O initialPosition
       }
@@ -79,16 +79,43 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
         Down ->
-            ( { model | activePiece = movePiece activePiece D }, Cmd.none )
+            ( refreshPlayfield model D, Cmd.none )
 
         Left ->
-            ( { model | activePiece = movePiece activePiece L }, Cmd.none )
+            ( refreshPlayfield model L, Cmd.none )
 
         Right ->
-            ( { model | activePiece = movePiece activePiece R }, Cmd.none )
+            ( refreshPlayfield model R, Cmd.none )
 
         Tick time ->
             ( maybeLockPiece model, Cmd.none )
+
+
+refreshPlayfield : Model -> WhichWay -> Model
+refreshPlayfield model whichWay =
+    let
+        (O ( oldX, oldY )) =
+            model.activePiece
+
+        movedPiece =
+            movePiece model.activePiece whichWay
+
+        (O ( x, y )) =
+            movedPiece
+
+        playfieldWithClearedPiece =
+            Array.get oldY model.playfield
+                |> Maybe.withDefault Array.empty
+                |> Array.set oldX "`"
+                |> (\newRow -> Array.set oldY newRow model.playfield)
+
+        newPlayfield =
+            Array.get y playfieldWithClearedPiece
+                |> Maybe.withDefault Array.empty
+                |> Array.set x "o"
+                |> (\newRow -> Array.set y newRow playfieldWithClearedPiece)
+    in
+    { model | activePiece = movedPiece, playfield = newPlayfield }
 
 
 movePiece : Piece -> WhichWay -> Piece
@@ -167,8 +194,19 @@ view { playfield, activePiece } =
         , button [ onClick Right ] [ text "->" ]
         , br [] []
         , br [] []
-        , showPieceAndPlayfieldWIP playfield activePiece
+
+        -- , showPieceAndPlayfieldWIP playfield activePiece
+        , showPlayfield playfield
         ]
+
+
+initPlayfield : Playfield
+initPlayfield =
+    emptyPlayfield
+        |> Array.get 0
+        |> Maybe.withDefault Array.empty
+        |> Array.set 1 "o"
+        |> (\newRow -> Array.set 0 newRow emptyPlayfield)
 
 
 emptyPlayfield : Playfield
@@ -185,31 +223,6 @@ showPlayfield playfield =
 showRow : Array String -> Html Msg
 showRow row =
     div [] [ text (String.join "" (Array.toList row)) ]
-
-
-showPieceAndPlayfieldWIP : Playfield -> Piece -> Html Msg
-showPieceAndPlayfieldWIP playfield piece =
-    let
-        playfield_ =
-            emptyPlayfield
-
-        (O ( x, y )) =
-            piece
-
-        playfieldWithClearedPiece =
-            Array.get y playfield
-                |> Maybe.withDefault Array.empty
-                |> Array.set x "`"
-                |> (\newRow -> Array.set y newRow playfield)
-
-        newPlayfield =
-            Array.get y playfieldWithClearedPiece
-                |> Maybe.withDefault Array.empty
-                |> Array.set x "o"
-                |> (\newRow -> Array.set y newRow playfieldWithClearedPiece)
-    in
-    -- div [] [ text <| String.concat [ "(", String.fromInt x, ", ", String.fromInt y, ")" ] ]
-    showPlayfield newPlayfield
 
 
 
