@@ -53,10 +53,15 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { playfield = emptyPlayfield
       , secondsElapsed = 0
-      , activePiece = O ( 1, 0 )
+      , activePiece = O initialPosition
       }
     , Cmd.none
     )
+
+
+initialPosition : Position
+initialPosition =
+    ( 1, 0 )
 
 
 
@@ -83,7 +88,7 @@ update msg ({ activePiece, playfield, secondsElapsed } as model) =
             ( { model | activePiece = movePiece activePiece R }, Cmd.none )
 
         Tick time ->
-            ( { model | secondsElapsed = secondsElapsed + 1 }, Cmd.none )
+            ( maybeLockPiece model, Cmd.none )
 
 
 movePiece : Piece -> WhichWay -> Piece
@@ -136,6 +141,20 @@ downLimit =
     19
 
 
+isPieceAtBottom : Model -> Bool
+isPieceAtBottom model =
+    Tuple.second (getPosition model.activePiece) == downLimit
+
+
+maybeLockPiece : Model -> Model
+maybeLockPiece model =
+    if isPieceAtBottom model then
+        { model | playfield = emptyPlayfield, activePiece = O initialPosition, secondsElapsed = 0 }
+
+    else
+        { model | secondsElapsed = model.secondsElapsed + 1 }
+
+
 
 -- VIEW
 
@@ -143,8 +162,7 @@ downLimit =
 view : Model -> Html Msg
 view { playfield, activePiece } =
     div []
-        [ showPlayfield playfield
-        , button [ onClick Down ] [ text "Down." ]
+        [ button [ onClick Down ] [ text "Down." ]
         , button [ onClick Left ] [ text "<-" ]
         , button [ onClick Right ] [ text "->" ]
         , br [] []
