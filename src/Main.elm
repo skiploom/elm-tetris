@@ -94,26 +94,16 @@ update msg ({ activePiece, playfield, secondsElapsed } as model) =
 refreshPlayfield : Model -> WhichWay -> Model
 refreshPlayfield model whichWay =
     let
-        (O ( oldX, oldY )) =
+        oldPiece =
             model.activePiece
 
         movedPiece =
             movePiece model.activePiece whichWay
 
-        (O ( x, y )) =
-            movedPiece
-
-        playfieldWithClearedPiece =
-            Array.get oldY model.playfield
-                |> Maybe.withDefault Array.empty
-                |> Array.set oldX "`"
-                |> (\newRow -> Array.set oldY newRow model.playfield)
-
         newPlayfield =
-            Array.get y playfieldWithClearedPiece
-                |> Maybe.withDefault Array.empty
-                |> Array.set x "o"
-                |> (\newRow -> Array.set y newRow playfieldWithClearedPiece)
+            model.playfield
+                |> removePieceFromPlayfield oldPiece
+                |> addPieceToPlayfield movedPiece
     in
     { model | activePiece = movedPiece, playfield = newPlayfield }
 
@@ -194,24 +184,36 @@ view { playfield, activePiece } =
         , button [ onClick Right ] [ text "->" ]
         , br [] []
         , br [] []
-
-        -- , showPieceAndPlayfieldWIP playfield activePiece
         , showPlayfield playfield
         ]
 
 
 initPlayfield : Playfield
 initPlayfield =
-    emptyPlayfield
-        |> Array.get 0
-        |> Maybe.withDefault Array.empty
-        |> Array.set 1 "o"
-        |> (\newRow -> Array.set 0 newRow emptyPlayfield)
+    addPieceToPlayfield (O initialPosition) emptyPlayfield
 
 
 emptyPlayfield : Playfield
 emptyPlayfield =
     Array.repeat (downLimit + 1) (Array.repeat (rightLimit + 1) "`")
+
+
+removePieceFromPlayfield : Piece -> Playfield -> Playfield
+removePieceFromPlayfield piece playfield =
+    updatePieceOnPlayfield piece playfield "`"
+
+
+addPieceToPlayfield : Piece -> Playfield -> Playfield
+addPieceToPlayfield piece playfield =
+    updatePieceOnPlayfield piece playfield "o"
+
+
+updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
+updatePieceOnPlayfield (O ( x, y )) playfield str =
+    Array.get y playfield
+        |> Maybe.withDefault Array.empty
+        |> Array.set x str
+        |> (\newRow -> Array.set y newRow playfield)
 
 
 showPlayfield : Playfield -> Html Msg
