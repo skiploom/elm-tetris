@@ -195,18 +195,7 @@ isPieceStuck model =
 
 isThereAPieceBelow : Model -> Bool
 isThereAPieceBelow model =
-    let
-        (O ( x, y )) =
-            model.activePiece
-
-        spaceBelow =
-            model.playfield
-                |> Array.get (y + 1)
-                |> Maybe.withDefault Array.empty
-                |> Array.get x
-                |> Maybe.withDefault "`"
-    in
-    spaceBelow /= "`"
+    not (canPieceMoveThatWay model D)
 
 
 isPieceAtBottom : Model -> Bool
@@ -224,22 +213,30 @@ maybeLockPiece model =
         }
 
     else if isPieceStuck model then
-        { model | playfield = addPieceToPlayfield (O initialPosition) model.playfield, activePiece = O initialPosition, secondsElapsed = 0 }
+        { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition, secondsElapsed = 0 }
 
     else
         { model | secondsElapsed = model.secondsElapsed + 1 }
 
 
-isThereALineClear : Model -> Bool
-isThereALineClear _ =
-    -- TODO Determine if the playfield has any filled lines
-    False
+isLineFull : Array String -> Bool
+isLineFull line =
+    List.all ((/=) "`") (Array.toList line)
 
 
-clearLines : List Int -> Playfield -> Playfield
-clearLines rows playfield =
-    -- TODO Clear lines at given rows
-    playfield
+clearLines : Playfield -> Playfield
+clearLines playfield =
+    let
+        playfieldSubsetWithClearedLines =
+            Array.filter (\line -> not (isLineFull line)) playfield
+
+        numClearedLines =
+            Array.length emptyPlayfield - Array.length playfieldSubsetWithClearedLines
+
+        refreshedPlayfield =
+            Array.append (Array.repeat numClearedLines emptyLine) playfieldSubsetWithClearedLines
+    in
+    refreshedPlayfield
 
 
 
@@ -260,7 +257,12 @@ view { playfield, activePiece } =
 
 emptyPlayfield : Playfield
 emptyPlayfield =
-    Array.repeat (downLimit + 1) (Array.repeat (rightLimit + 1) "`")
+    Array.repeat (downLimit + 1) emptyLine
+
+
+emptyLine : Array String
+emptyLine =
+    Array.repeat (rightLimit + 1) "`"
 
 
 removePieceFromPlayfield : Piece -> Playfield -> Playfield
