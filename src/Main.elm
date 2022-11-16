@@ -166,7 +166,7 @@ isPieceAtBottom model =
 maybeLockPiece : Model -> Model
 maybeLockPiece model =
     if isPieceAtBottom model then
-        { model | playfield = emptyPlayfield, activePiece = O initialPosition, secondsElapsed = 0 }
+        { model | playfield = initPlayfield, activePiece = O initialPosition, secondsElapsed = 0 }
 
     else
         { model | secondsElapsed = model.secondsElapsed + 1 }
