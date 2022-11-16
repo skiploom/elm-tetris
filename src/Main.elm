@@ -51,7 +51,7 @@ type WhichWay
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { playfield = initPlayfield
+    ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
       , secondsElapsed = 0
       , activePiece = O initialPosition
       }
@@ -79,16 +79,41 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
         Down ->
-            ( refreshPlayfield model D, Cmd.none )
+            ( maybeRefreshPlayfield model D, Cmd.none )
 
         Left ->
-            ( refreshPlayfield model L, Cmd.none )
+            ( maybeRefreshPlayfield model L, Cmd.none )
 
         Right ->
-            ( refreshPlayfield model R, Cmd.none )
+            ( maybeRefreshPlayfield model R, Cmd.none )
 
         Tick time ->
-            ( maybeLockPiece model, Cmd.none )
+            ( maybeLockPiece (maybeRefreshPlayfield model D), Cmd.none )
+
+
+maybeRefreshPlayfield : Model -> WhichWay -> Model
+maybeRefreshPlayfield model whichWay =
+    if canPieceMoveThatWay model whichWay then
+        refreshPlayfield model whichWay
+
+    else
+        model
+
+
+canPieceMoveThatWay : Model -> WhichWay -> Bool
+canPieceMoveThatWay model whichWay =
+    let
+        (O ( x, y )) =
+            movePiece model.activePiece whichWay
+
+        spaceBelow =
+            model.playfield
+                |> Array.get y
+                |> Maybe.withDefault Array.empty
+                |> Array.get x
+                |> Maybe.withDefault "`"
+    in
+    spaceBelow == "`"
 
 
 refreshPlayfield : Model -> WhichWay -> Model
@@ -158,6 +183,32 @@ downLimit =
     19
 
 
+isToppedOut : Model -> Bool
+isToppedOut model =
+    (Tuple.second (getPosition model.activePiece) == 0) && isPieceStuck model
+
+
+isPieceStuck : Model -> Bool
+isPieceStuck model =
+    isThereAPieceBelow model || isPieceAtBottom model
+
+
+isThereAPieceBelow : Model -> Bool
+isThereAPieceBelow model =
+    let
+        (O ( x, y )) =
+            model.activePiece
+
+        spaceBelow =
+            model.playfield
+                |> Array.get (y + 1)
+                |> Maybe.withDefault Array.empty
+                |> Array.get x
+                |> Maybe.withDefault "`"
+    in
+    spaceBelow /= "`"
+
+
 isPieceAtBottom : Model -> Bool
 isPieceAtBottom model =
     Tuple.second (getPosition model.activePiece) == downLimit
@@ -165,11 +216,30 @@ isPieceAtBottom model =
 
 maybeLockPiece : Model -> Model
 maybeLockPiece model =
-    if isPieceAtBottom model then
-        { model | playfield = initPlayfield, activePiece = O initialPosition, secondsElapsed = 0 }
+    if isToppedOut model then
+        -- Start over.
+        { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
+        , secondsElapsed = 0
+        , activePiece = O initialPosition
+        }
+
+    else if isPieceStuck model then
+        { model | playfield = addPieceToPlayfield (O initialPosition) model.playfield, activePiece = O initialPosition, secondsElapsed = 0 }
 
     else
         { model | secondsElapsed = model.secondsElapsed + 1 }
+
+
+isThereALineClear : Model -> Bool
+isThereALineClear _ =
+    -- TODO Determine if the playfield has any filled lines
+    False
+
+
+clearLines : List Int -> Playfield -> Playfield
+clearLines rows playfield =
+    -- TODO Clear lines at given rows
+    playfield
 
 
 
@@ -186,11 +256,6 @@ view { playfield, activePiece } =
         , br [] []
         , showPlayfield playfield
         ]
-
-
-initPlayfield : Playfield
-initPlayfield =
-    addPieceToPlayfield (O initialPosition) emptyPlayfield
 
 
 emptyPlayfield : Playfield
