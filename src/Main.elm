@@ -46,6 +46,7 @@ type alias SecondsElapsed =
 
 type Piece
     = O Position
+    | I Position
 
 
 type alias Position =
@@ -124,8 +125,8 @@ maybeRefreshPlayfield model whichWay =
 canPieceMoveThatWay : Model -> WhichWay -> Bool
 canPieceMoveThatWay model whichWay =
     let
-        (O ( x, y )) =
-            movePiece model.activePiece whichWay
+        ( x, y ) =
+            getPosition <| movePiece model.activePiece whichWay
 
         spaceBelow =
             model.playfield
@@ -188,6 +189,9 @@ getPosition piece =
         O position ->
             position
 
+        I position ->
+            position
+
 
 leftLimit : Int
 leftLimit =
@@ -207,8 +211,8 @@ downLimit =
 hardDrop : Model -> Model
 hardDrop model =
     let
-        (O ( x, y )) =
-            model.activePiece
+        ( x, y ) =
+            getPosition model.activePiece
 
         highestFilledY =
             findIndexForHardDrop <|
@@ -371,11 +375,15 @@ removePieceFromPlayfield piece playfield =
 
 addPieceToPlayfield : Piece -> Playfield -> Playfield
 addPieceToPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield "o"
+    updatePieceOnPlayfield piece playfield (showPiece piece)
 
 
 updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
-updatePieceOnPlayfield (O ( x, y )) playfield str =
+updatePieceOnPlayfield piece playfield str =
+    let
+        ( x, y ) =
+            getPosition piece
+    in
     Array.get y playfield
         |> Maybe.withDefault Array.empty
         |> Array.set x str
@@ -391,6 +399,16 @@ showPlayfield playfield =
 showLine : Array Space -> Html Msg
 showLine line =
     div [] [ text (String.join "" (Array.toList line)) ]
+
+
+showPiece : Piece -> Space
+showPiece piece =
+    case piece of
+        O _ ->
+            "o"
+
+        I _ ->
+            "I"
 
 
 emptySpace : Space
