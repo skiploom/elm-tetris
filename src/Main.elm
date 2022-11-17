@@ -3,7 +3,7 @@ module Main exposing (..)
 import Array exposing (Array)
 import Browser
 import Browser.Events
-import Html exposing (Html, br, button, div, text)
+import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Decode
@@ -46,6 +46,11 @@ type alias SecondsElapsed =
 type Piece
     = O Position
     | I Position
+    | Z Position
+    | S Position
+    | L Position
+    | J Position
+    | T Position
 
 
 type alias Position =
@@ -194,6 +199,21 @@ setPosition newPosition piece =
         I _ ->
             I newPosition
 
+        Z _ ->
+            Z newPosition
+
+        S _ ->
+            S newPosition
+
+        L _ ->
+            L newPosition
+
+        J _ ->
+            J newPosition
+
+        T _ ->
+            T newPosition
+
 
 getPosition : Piece -> Position
 getPosition piece =
@@ -202,6 +222,21 @@ getPosition piece =
             position
 
         I position ->
+            position
+
+        Z position ->
+            position
+
+        S position ->
+            position
+
+        L position ->
+            position
+
+        J position ->
+            position
+
+        T position ->
             position
 
 
@@ -362,7 +397,14 @@ keyToAction string =
 
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
-    Random.uniform (O initialPosition) [ I initialPosition ]
+    Random.uniform (O initialPosition)
+        [ I initialPosition
+        , L initialPosition
+        , J initialPosition
+        , Z initialPosition
+        , S initialPosition
+        , T initialPosition
+        ]
 
 
 newPiece : Cmd Msg
@@ -398,7 +440,7 @@ removePieceFromPlayfield piece playfield =
 
 addPieceToPlayfield : Piece -> Playfield -> Playfield
 addPieceToPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield (showPiece piece)
+    updatePieceOnPlayfield piece playfield (pieceToString piece)
 
 
 updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
@@ -415,23 +457,84 @@ updatePieceOnPlayfield piece playfield str =
 
 showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
-    div [ style "font-family" "monospace" ]
+    div
+        [ style "font-family" "monospace"
+        , style "font-size" "1.5rem"
+        , style "text-align" "center"
+        , style "padding" "1rem"
+        ]
         (Array.toList (Array.map showLine playfield))
 
 
 showLine : Array Space -> Html Msg
 showLine line =
-    div [] [ text (String.join "" (Array.toList line)) ]
+    div [] (Array.toList (Array.map showSpace line))
 
 
-showPiece : Piece -> Space
-showPiece piece =
+showSpace : Space -> Html Msg
+showSpace space =
+    span [ style "color" (spaceToColor space) ] [ text space ]
+
+
+spaceToColor : Space -> String
+spaceToColor space =
+    case space of
+        "O" ->
+            -- Yellow
+            "#FFF176"
+
+        "I" ->
+            -- Cyan
+            "#4DD0E1"
+
+        "Z" ->
+            -- Pink
+            "#F06292"
+
+        "S" ->
+            -- Green
+            "#81C784"
+
+        "L" ->
+            -- Orange
+            "#E65100"
+
+        "J" ->
+            -- Blue
+            "#0D47A1"
+
+        "T" ->
+            -- Purple
+            "#BA68C8"
+
+        _ ->
+            -- Light Gray
+            "#F5F5F5"
+
+
+pieceToString : Piece -> Space
+pieceToString piece =
     case piece of
         O _ ->
-            "o"
+            "O"
 
         I _ ->
             "I"
+
+        Z _ ->
+            "Z"
+
+        S _ ->
+            "S"
+
+        L _ ->
+            "L"
+
+        J _ ->
+            "J"
+
+        T _ ->
+            "T"
 
 
 emptySpace : Space
