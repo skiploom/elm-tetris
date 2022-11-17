@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Array exposing (Array)
 import Browser
+import Browser.Events
 import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Json.Decode
 import Time
 
 
@@ -49,6 +51,13 @@ type WhichWay
     | D
 
 
+type Action
+    = MoveLeft
+    | MoveRight
+    | SoftDrop
+    | NoOp
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
@@ -70,25 +79,28 @@ initialPosition =
 
 type Msg
     = Tick Time.Posix
-    | Left
-    | Right
-    | Down
+    | Do Action
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
-        Down ->
-            ( maybeRefreshPlayfield model D, Cmd.none )
-
-        Left ->
-            ( maybeRefreshPlayfield model L, Cmd.none )
-
-        Right ->
-            ( maybeRefreshPlayfield model R, Cmd.none )
-
         Tick time ->
             ( maybeLockPiece (maybeRefreshPlayfield model D), Cmd.none )
+
+        Do action ->
+            case action of
+                MoveLeft ->
+                    ( maybeRefreshPlayfield model L, Cmd.none )
+
+                MoveRight ->
+                    ( maybeRefreshPlayfield model R, Cmd.none )
+
+                SoftDrop ->
+                    ( maybeRefreshPlayfield model D, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 maybeRefreshPlayfield : Model -> WhichWay -> Model
@@ -246,12 +258,7 @@ clearLines playfield =
 view : Model -> Html Msg
 view { playfield, activePiece } =
     div []
-        [ button [ onClick Down ] [ text "Down." ]
-        , button [ onClick Left ] [ text "<-" ]
-        , button [ onClick Right ] [ text "->" ]
-        , br [] []
-        , br [] []
-        , showPlayfield playfield
+        [ showPlayfield playfield
         ]
 
 
@@ -294,10 +301,34 @@ showRow row =
     div [] [ text (String.join "" (Array.toList row)) ]
 
 
+keyDecoder : Json.Decode.Decoder Msg
+keyDecoder =
+    Json.Decode.map keyToAction (Json.Decode.field "key" Json.Decode.string)
+
+
+keyToAction : String -> Msg
+keyToAction string =
+    case string of
+        "ArrowLeft" ->
+            Do MoveLeft
+
+        "ArrowRight" ->
+            Do MoveRight
+
+        "ArrowDown" ->
+            Do SoftDrop
+
+        _ ->
+            Do NoOp
+
+
 
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Time.every 1000 Tick
+subscriptions _ =
+    Sub.batch
+        [ Time.every 1000 Tick
+        , Browser.Events.onKeyDown keyDecoder
+        ]
