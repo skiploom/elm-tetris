@@ -8,12 +8,12 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
+import Random
 import Time
 
 
 
 {-
-   -- TODO Make at least one new piece
    -- TODO Randomize which piece is generated
    -- TODO Make pieces not just one space large
    -- TODO Make simple clockwise rotation logic
@@ -88,6 +88,7 @@ type Msg
     | MoveRight
     | SoftDrop
     | HardDrop
+    | NewPiece Piece
     | NoOp
 
 
@@ -95,7 +96,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
         Tick time ->
-            ( maybeLockPiece (maybeRefreshPlayfield model Down), Cmd.none )
+            maybeLockPiece (maybeRefreshPlayfield model Down)
 
         MoveLeft ->
             ( maybeRefreshPlayfield model Left, Cmd.none )
@@ -107,7 +108,10 @@ update msg ({ activePiece, playfield, secondsElapsed } as model) =
             ( maybeRefreshPlayfield model Down, Cmd.none )
 
         HardDrop ->
-            ( hardDrop model, Cmd.none )
+            ( hardDrop model, newPiece )
+
+        NewPiece piece ->
+            ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece, secondsElapsed = 0 }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -286,20 +290,22 @@ isPieceAtBottom model =
     Tuple.second (getPosition model.activePiece) == downLimit
 
 
-maybeLockPiece : Model -> Model
+maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
-        { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
-        , secondsElapsed = 0
-        , activePiece = O initialPosition
-        }
+        ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
+          , secondsElapsed = 0
+          , activePiece = O initialPosition
+          }
+        , Cmd.none
+        )
 
     else if isPieceStuck model then
-        lockPiece model
+        ( model, newPiece )
 
     else
-        { model | secondsElapsed = model.secondsElapsed + 1 }
+        ( { model | secondsElapsed = model.secondsElapsed + 1 }, Cmd.none )
 
 
 lockPiece : Model -> Model
@@ -355,6 +361,16 @@ keyToAction string =
 
         _ ->
             NoOp
+
+
+randomPieceHelper : Random.Generator Piece
+randomPieceHelper =
+    Random.uniform (O initialPosition) [ I initialPosition ]
+
+
+newPiece : Cmd Msg
+newPiece =
+    Random.generate NewPiece randomPieceHelper
 
 
 
