@@ -12,6 +12,12 @@ import Time
 
 
 
+{-
+   -- TODO Make at least one new piece
+   -- TODO Randomize which piece is generated
+   -- TODO Make pieces not just one space large
+   -- TODO Make simple clockwise rotation logic
+-}
 -- MAIN
 
 
