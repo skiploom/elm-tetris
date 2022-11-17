@@ -7,6 +7,7 @@ import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Decode
+import List.Extra
 import Time
 
 
@@ -51,13 +52,6 @@ type WhichWay
     | D
 
 
-type Action
-    = MoveLeft
-    | MoveRight
-    | SoftDrop
-    | NoOp
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
@@ -79,7 +73,11 @@ initialPosition =
 
 type Msg
     = Tick Time.Posix
-    | Do Action
+    | MoveLeft
+    | MoveRight
+    | SoftDrop
+    | HardDrop
+    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -88,19 +86,20 @@ update msg ({ activePiece, playfield, secondsElapsed } as model) =
         Tick time ->
             ( maybeLockPiece (maybeRefreshPlayfield model D), Cmd.none )
 
-        Do action ->
-            case action of
-                MoveLeft ->
-                    ( maybeRefreshPlayfield model L, Cmd.none )
+        MoveLeft ->
+            ( maybeRefreshPlayfield model L, Cmd.none )
 
-                MoveRight ->
-                    ( maybeRefreshPlayfield model R, Cmd.none )
+        MoveRight ->
+            ( maybeRefreshPlayfield model R, Cmd.none )
 
-                SoftDrop ->
-                    ( maybeRefreshPlayfield model D, Cmd.none )
+        SoftDrop ->
+            ( maybeRefreshPlayfield model D, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+        HardDrop ->
+            ( hardDrop model, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 maybeRefreshPlayfield : Model -> WhichWay -> Model
@@ -195,6 +194,54 @@ downLimit =
     19
 
 
+hardDrop : Model -> Model
+hardDrop model =
+    let
+        (O ( x, y )) =
+            model.activePiece
+
+        highestFilledY =
+            findIndexForHardDrop <|
+                findFilledSpaceIndicesInColumn <|
+                    extractColumn x model.playfield
+
+        movedPiece =
+            O ( x, max 0 (highestFilledY - 1) )
+
+        newPlayfield =
+            model.playfield
+                |> removePieceFromPlayfield model.activePiece
+                |> addPieceToPlayfield movedPiece
+    in
+    lockPiece { model | activePiece = movedPiece, playfield = newPlayfield }
+
+
+findIndexForHardDrop : List Int -> Int
+findIndexForHardDrop filledIndices =
+    case filledIndices of
+        [] ->
+            downLimit + 1
+
+        [ _ ] ->
+            downLimit + 1
+
+        atLeastTwo ->
+            List.Extra.getAt 1 atLeastTwo
+                |> Maybe.withDefault (downLimit + 1)
+
+
+{-| Includes the space filled by the currently active piece for simplicity
+-}
+findFilledSpaceIndicesInColumn : Array String -> List Int
+findFilledSpaceIndicesInColumn extractedColumn =
+    List.Extra.findIndices isSpaceFull (Array.toList extractedColumn)
+
+
+extractColumn : Int -> Playfield -> Array String
+extractColumn columnNumber playfield =
+    Array.map (Array.get columnNumber >> Maybe.withDefault "`") playfield
+
+
 isToppedOut : Model -> Bool
 isToppedOut model =
     (Tuple.second (getPosition model.activePiece) == 0) && isPieceStuck model
@@ -218,22 +265,32 @@ isPieceAtBottom model =
 maybeLockPiece : Model -> Model
 maybeLockPiece model =
     if isToppedOut model then
-        -- Start over.
+        -- Start the game over.
         { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
         , secondsElapsed = 0
         , activePiece = O initialPosition
         }
 
     else if isPieceStuck model then
-        { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition, secondsElapsed = 0 }
+        lockPiece model
 
     else
         { model | secondsElapsed = model.secondsElapsed + 1 }
 
 
+lockPiece : Model -> Model
+lockPiece model =
+    { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition, secondsElapsed = 0 }
+
+
 isLineFull : Array String -> Bool
 isLineFull line =
-    List.all ((/=) "`") (Array.toList line)
+    List.all isSpaceFull (Array.toList line)
+
+
+isSpaceFull : String -> Bool
+isSpaceFull space =
+    space /= "`"
 
 
 clearLines : Playfield -> Playfield
@@ -287,18 +344,18 @@ updatePieceOnPlayfield (O ( x, y )) playfield str =
     Array.get y playfield
         |> Maybe.withDefault Array.empty
         |> Array.set x str
-        |> (\newRow -> Array.set y newRow playfield)
+        |> (\newLine -> Array.set y newLine playfield)
 
 
 showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
     div [ style "font-family" "monospace" ]
-        (Array.toList (Array.map showRow playfield))
+        (Array.toList (Array.map showLine playfield))
 
 
-showRow : Array String -> Html Msg
-showRow row =
-    div [] [ text (String.join "" (Array.toList row)) ]
+showLine : Array String -> Html Msg
+showLine line =
+    div [] [ text (String.join "" (Array.toList line)) ]
 
 
 keyDecoder : Json.Decode.Decoder Msg
@@ -310,16 +367,20 @@ keyToAction : String -> Msg
 keyToAction string =
     case string of
         "ArrowLeft" ->
-            Do MoveLeft
+            MoveLeft
 
         "ArrowRight" ->
-            Do MoveRight
+            MoveRight
 
         "ArrowDown" ->
-            Do SoftDrop
+            SoftDrop
+
+        " " ->
+            -- Space key
+            HardDrop
 
         _ ->
-            Do NoOp
+            NoOp
 
 
 
