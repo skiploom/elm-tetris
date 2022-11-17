@@ -54,9 +54,9 @@ type alias Position =
 
 
 type WhichWay
-    = L
-    | R
-    | D
+    = Left
+    | Right
+    | Down
 
 
 type alias Space =
@@ -95,16 +95,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ activePiece, playfield, secondsElapsed } as model) =
     case msg of
         Tick time ->
-            ( maybeLockPiece (maybeRefreshPlayfield model D), Cmd.none )
+            ( maybeLockPiece (maybeRefreshPlayfield model Down), Cmd.none )
 
         MoveLeft ->
-            ( maybeRefreshPlayfield model L, Cmd.none )
+            ( maybeRefreshPlayfield model Left, Cmd.none )
 
         MoveRight ->
-            ( maybeRefreshPlayfield model R, Cmd.none )
+            ( maybeRefreshPlayfield model Right, Cmd.none )
 
         SoftDrop ->
-            ( maybeRefreshPlayfield model D, Cmd.none )
+            ( maybeRefreshPlayfield model Down, Cmd.none )
 
         HardDrop ->
             ( hardDrop model, Cmd.none )
@@ -135,7 +135,7 @@ canPieceMoveThatWay model whichWay =
                 |> Array.get x
                 |> Maybe.withDefault emptySpace
     in
-    spaceBelow == "`"
+    spaceBelow == emptySpace
 
 
 refreshPlayfield : Model -> WhichWay -> Model
@@ -158,14 +158,14 @@ refreshPlayfield model whichWay =
 movePiece : Piece -> WhichWay -> Piece
 movePiece piece whichWay =
     case whichWay of
-        L ->
-            O <| Tuple.mapFirst goLeft (getPosition piece)
+        Left ->
+            setPosition (Tuple.mapFirst goLeft (getPosition piece)) piece
 
-        R ->
-            O <| Tuple.mapFirst goRight (getPosition piece)
+        Right ->
+            setPosition (Tuple.mapFirst goRight (getPosition piece)) piece
 
-        D ->
-            O <| Tuple.mapSecond goDown (getPosition piece)
+        Down ->
+            setPosition (Tuple.mapSecond goDown (getPosition piece)) piece
 
 
 goLeft : Int -> Int
@@ -181,6 +181,16 @@ goRight curr =
 goDown : Int -> Int
 goDown curr =
     min downLimit (curr + 1)
+
+
+setPosition : Position -> Piece -> Piece
+setPosition newPosition piece =
+    case piece of
+        O _ ->
+            O newPosition
+
+        I _ ->
+            I newPosition
 
 
 getPosition : Piece -> Position
@@ -220,7 +230,7 @@ hardDrop model =
                     extractColumn x model.playfield
 
         movedPiece =
-            O ( x, max 0 (highestFilledY - 1) )
+            setPosition ( x, max 0 (highestFilledY - 1) ) model.activePiece
 
         newPlayfield =
             model.playfield
@@ -268,7 +278,7 @@ isPieceStuck model =
 
 isThereAPieceBelow : Model -> Bool
 isThereAPieceBelow model =
-    not (canPieceMoveThatWay model D)
+    not (canPieceMoveThatWay model Down)
 
 
 isPieceAtBottom : Model -> Bool
