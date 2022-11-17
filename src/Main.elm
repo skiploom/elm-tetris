@@ -31,7 +31,7 @@ type alias Model =
 
 
 type alias Playfield =
-    Array (Array String)
+    Array (Array Space)
 
 
 type alias SecondsElapsed =
@@ -50,6 +50,10 @@ type WhichWay
     = L
     | R
     | D
+
+
+type alias Space =
+    String
 
 
 init : () -> ( Model, Cmd Msg )
@@ -122,7 +126,7 @@ canPieceMoveThatWay model whichWay =
                 |> Array.get y
                 |> Maybe.withDefault Array.empty
                 |> Array.get x
-                |> Maybe.withDefault "`"
+                |> Maybe.withDefault emptySpace
     in
     spaceBelow == "`"
 
@@ -232,14 +236,14 @@ findIndexForHardDrop filledIndices =
 
 {-| Includes the space filled by the currently active piece for simplicity
 -}
-findFilledSpaceIndicesInColumn : Array String -> List Int
+findFilledSpaceIndicesInColumn : Array Space -> List Int
 findFilledSpaceIndicesInColumn extractedColumn =
     List.Extra.findIndices isSpaceFull (Array.toList extractedColumn)
 
 
-extractColumn : Int -> Playfield -> Array String
+extractColumn : Int -> Playfield -> Array Space
 extractColumn columnNumber playfield =
-    Array.map (Array.get columnNumber >> Maybe.withDefault "`") playfield
+    Array.map (Array.get columnNumber >> Maybe.withDefault emptySpace) playfield
 
 
 isToppedOut : Model -> Bool
@@ -283,14 +287,14 @@ lockPiece model =
     { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition, secondsElapsed = 0 }
 
 
-isLineFull : Array String -> Bool
+isLineFull : Array Space -> Bool
 isLineFull line =
     List.all isSpaceFull (Array.toList line)
 
 
-isSpaceFull : String -> Bool
+isSpaceFull : Space -> Bool
 isSpaceFull space =
-    space /= "`"
+    space /= emptySpace
 
 
 clearLines : Playfield -> Playfield
@@ -306,56 +310,6 @@ clearLines playfield =
             Array.append (Array.repeat numClearedLines emptyLine) playfieldSubsetWithClearedLines
     in
     refreshedPlayfield
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view { playfield, activePiece } =
-    div []
-        [ showPlayfield playfield
-        ]
-
-
-emptyPlayfield : Playfield
-emptyPlayfield =
-    Array.repeat (downLimit + 1) emptyLine
-
-
-emptyLine : Array String
-emptyLine =
-    Array.repeat (rightLimit + 1) "`"
-
-
-removePieceFromPlayfield : Piece -> Playfield -> Playfield
-removePieceFromPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield "`"
-
-
-addPieceToPlayfield : Piece -> Playfield -> Playfield
-addPieceToPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield "o"
-
-
-updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
-updatePieceOnPlayfield (O ( x, y )) playfield str =
-    Array.get y playfield
-        |> Maybe.withDefault Array.empty
-        |> Array.set x str
-        |> (\newLine -> Array.set y newLine playfield)
-
-
-showPlayfield : Playfield -> Html Msg
-showPlayfield playfield =
-    div [ style "font-family" "monospace" ]
-        (Array.toList (Array.map showLine playfield))
-
-
-showLine : Array String -> Html Msg
-showLine line =
-    div [] [ text (String.join "" (Array.toList line)) ]
 
 
 keyDecoder : Json.Decode.Decoder Msg
@@ -381,6 +335,61 @@ keyToAction string =
 
         _ ->
             NoOp
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view { playfield, activePiece } =
+    div []
+        [ showPlayfield playfield
+        ]
+
+
+emptyPlayfield : Playfield
+emptyPlayfield =
+    Array.repeat (downLimit + 1) emptyLine
+
+
+emptyLine : Array Space
+emptyLine =
+    Array.repeat (rightLimit + 1) emptySpace
+
+
+removePieceFromPlayfield : Piece -> Playfield -> Playfield
+removePieceFromPlayfield piece playfield =
+    updatePieceOnPlayfield piece playfield emptySpace
+
+
+addPieceToPlayfield : Piece -> Playfield -> Playfield
+addPieceToPlayfield piece playfield =
+    updatePieceOnPlayfield piece playfield "o"
+
+
+updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
+updatePieceOnPlayfield (O ( x, y )) playfield str =
+    Array.get y playfield
+        |> Maybe.withDefault Array.empty
+        |> Array.set x str
+        |> (\newLine -> Array.set y newLine playfield)
+
+
+showPlayfield : Playfield -> Html Msg
+showPlayfield playfield =
+    div [ style "font-family" "monospace" ]
+        (Array.toList (Array.map showLine playfield))
+
+
+showLine : Array Space -> Html Msg
+showLine line =
+    div [] [ text (String.join "" (Array.toList line)) ]
+
+
+emptySpace : Space
+emptySpace =
+    "`"
 
 
 
