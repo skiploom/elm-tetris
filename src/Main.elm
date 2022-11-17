@@ -31,7 +31,6 @@ main =
 
 type alias Model =
     { playfield : Playfield
-    , secondsElapsed : SecondsElapsed
     , activePiece : Piece
     }
 
@@ -66,7 +65,6 @@ type alias Space =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
-      , secondsElapsed = 0
       , activePiece = O initialPosition
       }
     , Cmd.none
@@ -93,7 +91,7 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ activePiece, playfield, secondsElapsed } as model) =
+update msg model =
     case msg of
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -111,7 +109,7 @@ update msg ({ activePiece, playfield, secondsElapsed } as model) =
             ( hardDrop model, newPiece )
 
         NewPiece piece ->
-            ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece, secondsElapsed = 0 }, Cmd.none )
+            ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -295,7 +293,6 @@ maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
         ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
-          , secondsElapsed = 0
           , activePiece = O initialPosition
           }
         , Cmd.none
@@ -305,12 +302,12 @@ maybeLockPiece model =
         ( model, newPiece )
 
     else
-        ( { model | secondsElapsed = model.secondsElapsed + 1 }, Cmd.none )
+        ( model, Cmd.none )
 
 
 lockPiece : Model -> Model
 lockPiece model =
-    { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition, secondsElapsed = 0 }
+    { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition }
 
 
 isLineFull : Array Space -> Bool
