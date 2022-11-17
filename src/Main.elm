@@ -54,7 +54,11 @@ type Piece
 
 
 type alias Position =
-    ( Int, Int )
+    { point1 : ( Int, Int )
+    , point2 : ( Int, Int )
+    , point3 : ( Int, Int )
+    , point4 : ( Int, Int )
+    }
 
 
 type WhichWay
@@ -78,7 +82,7 @@ init _ =
 
 initialPosition : Position
 initialPosition =
-    ( 1, 0 )
+    setPositionTempHelper ( 1, 0 )
 
 
 
@@ -108,7 +112,7 @@ update msg model =
             ( maybeRefreshPlayfield model Right, Cmd.none )
 
         SoftDrop ->
-            ( maybeRefreshPlayfield model Down, Cmd.none )
+            maybeLockPiece (maybeRefreshPlayfield model Down)
 
         HardDrop ->
             ( hardDrop model, newPiece )
@@ -131,18 +135,25 @@ maybeRefreshPlayfield model whichWay =
 
 canPieceMoveThatWay : Model -> WhichWay -> Bool
 canPieceMoveThatWay model whichWay =
+    -- First, naively remove the active piece from the playfield
+    -- Then, for each of the four spaces of the new location, check if those spaces are filled on the playfield
+    -- If ANY are filled, return false. OW, return true
     let
-        ( x, y ) =
+        destination =
             getPosition <| movePiece model.activePiece whichWay
 
-        spaceBelow =
-            model.playfield
-                |> Array.get y
+        playfieldWithoutActivePiece =
+            removePieceFromPlayfield model.activePiece model.playfield
+
+        isSpaceEmpty_ playfield_ ( x_, y_ ) =
+            playfield_
+                |> Array.get y_
                 |> Maybe.withDefault Array.empty
-                |> Array.get x
+                |> Array.get x_
                 |> Maybe.withDefault emptySpace
+                |> isSpaceEmpty
     in
-    spaceBelow == emptySpace
+    List.all (isSpaceEmpty_ playfieldWithoutActivePiece) [ destination.point1, destination.point2, destination.point3, destination.point4 ]
 
 
 refreshPlayfield : Model -> WhichWay -> Model
@@ -166,13 +177,52 @@ movePiece : Piece -> WhichWay -> Piece
 movePiece piece whichWay =
     case whichWay of
         Left ->
-            setPosition (Tuple.mapFirst goLeft (getPosition piece)) piece
+            setPosition (goLeftNew (getPosition piece)) piece
 
         Right ->
-            setPosition (Tuple.mapFirst goRight (getPosition piece)) piece
+            setPosition (goRightNew (getPosition piece)) piece
 
         Down ->
-            setPosition (Tuple.mapSecond goDown (getPosition piece)) piece
+            setPosition (goDownNew (getPosition piece)) piece
+
+
+movePieceTempHelper : (( Int, Int ) -> ( Int, Int )) -> Position -> Position
+movePieceTempHelper point1MoverFunction originalPosition =
+    { point1 = point1MoverFunction originalPosition.point1
+    , point2 = point1MoverFunction originalPosition.point1
+    , point3 = point1MoverFunction originalPosition.point1
+    , point4 = point1MoverFunction originalPosition.point1
+    }
+
+
+goLeftNew : Position -> Position
+goLeftNew curr =
+    { curr
+        | point1 = Tuple.mapFirst goLeft curr.point1
+        , point2 = Tuple.mapFirst goLeft curr.point2
+        , point3 = Tuple.mapFirst goLeft curr.point3
+        , point4 = Tuple.mapFirst goLeft curr.point4
+    }
+
+
+goRightNew : Position -> Position
+goRightNew curr =
+    { curr
+        | point1 = Tuple.mapFirst goRight curr.point1
+        , point2 = Tuple.mapFirst goRight curr.point2
+        , point3 = Tuple.mapFirst goRight curr.point3
+        , point4 = Tuple.mapFirst goRight curr.point4
+    }
+
+
+goDownNew : Position -> Position
+goDownNew curr =
+    { curr
+        | point1 = Tuple.mapSecond goDown curr.point1
+        , point2 = Tuple.mapSecond goDown curr.point2
+        , point3 = Tuple.mapSecond goDown curr.point3
+        , point4 = Tuple.mapSecond goDown curr.point4
+    }
 
 
 goLeft : Int -> Int
@@ -259,7 +309,7 @@ hardDrop : Model -> Model
 hardDrop model =
     let
         ( x, y ) =
-            getPosition model.activePiece
+            getPositionTempHelper <| getPosition model.activePiece
 
         highestFilledY =
             findIndexForHardDrop <|
@@ -267,7 +317,7 @@ hardDrop model =
                     extractColumn x model.playfield
 
         movedPiece =
-            setPosition ( x, max 0 (highestFilledY - 1) ) model.activePiece
+            setPosition (setPositionTempHelper ( x, max 0 (highestFilledY - 1) )) model.activePiece
 
         newPlayfield =
             model.playfield
@@ -275,6 +325,15 @@ hardDrop model =
                 |> addPieceToPlayfield movedPiece
     in
     lockPiece { model | activePiece = movedPiece, playfield = newPlayfield }
+
+
+setPositionTempHelper : ( Int, Int ) -> Position
+setPositionTempHelper point1 =
+    { point1 = point1
+    , point2 = point1
+    , point3 = point1
+    , point4 = point1
+    }
 
 
 findIndexForHardDrop : List Int -> Int
@@ -305,7 +364,7 @@ extractColumn columnNumber playfield =
 
 isToppedOut : Model -> Bool
 isToppedOut model =
-    (Tuple.second (getPosition model.activePiece) == 0) && isPieceStuck model
+    (Tuple.second (getPositionTempHelper <| getPosition model.activePiece) == 0) && isPieceStuck model
 
 
 isPieceStuck : Model -> Bool
@@ -320,7 +379,19 @@ isThereAPieceBelow model =
 
 isPieceAtBottom : Model -> Bool
 isPieceAtBottom model =
-    Tuple.second (getPosition model.activePiece) == downLimit
+    getPosition model.activePiece
+        |> positionToList
+        |> List.map Tuple.second
+        |> List.any ((==) downLimit)
+
+
+positionToList : Position -> List ( Int, Int )
+positionToList position =
+    [ position.point1
+    , position.point2
+    , position.point3
+    , position.point4
+    ]
 
 
 maybeLockPiece : Model -> ( Model, Cmd Msg )
@@ -353,6 +424,11 @@ isLineFull line =
 isSpaceFull : Space -> Bool
 isSpaceFull space =
     space /= emptySpace
+
+
+isSpaceEmpty : Space -> Bool
+isSpaceEmpty space =
+    not <| isSpaceFull space
 
 
 clearLines : Playfield -> Playfield
@@ -398,13 +474,22 @@ keyToAction string =
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
     Random.uniform (O initialPosition)
-        [ I initialPosition
+        [ I iPieceLocationTempHelper
         , L initialPosition
         , J initialPosition
         , Z initialPosition
         , S initialPosition
         , T initialPosition
         ]
+
+
+iPieceLocationTempHelper : Position
+iPieceLocationTempHelper =
+    { point1 = ( 1, 0 )
+    , point2 = ( 1, 1 )
+    , point3 = ( 1, 2 )
+    , point4 = ( 1, 3 )
+    }
 
 
 newPiece : Cmd Msg
@@ -433,26 +518,66 @@ emptyLine =
     Array.repeat (rightLimit + 1) emptySpace
 
 
-removePieceFromPlayfield : Piece -> Playfield -> Playfield
-removePieceFromPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield emptySpace
-
-
-addPieceToPlayfield : Piece -> Playfield -> Playfield
-addPieceToPlayfield piece playfield =
-    updatePieceOnPlayfield piece playfield (pieceToString piece)
-
-
 updatePieceOnPlayfield : Piece -> Playfield -> String -> Playfield
 updatePieceOnPlayfield piece playfield str =
     let
         ( x, y ) =
-            getPosition piece
+            getPositionTempHelper <| getPosition piece
     in
     Array.get y playfield
         |> Maybe.withDefault Array.empty
         |> Array.set x str
         |> (\newLine -> Array.set y newLine playfield)
+
+
+addPieceToPlayfield : Piece -> Playfield -> Playfield
+addPieceToPlayfield piece playfield =
+    -- Get the four elements from the playfield that correspond to the four parts of piece.location
+    -- At those playfield elements, replace whatever is there with the piece's shape.
+    let
+        ( str, position ) =
+            ( pieceToString piece, getPosition piece )
+
+        redraw ( x_, y_ ) playfield_ =
+            Array.get y_ playfield_
+                |> Maybe.withDefault Array.empty
+                |> Array.set x_ str
+                |> (\newLine -> Array.set y_ newLine playfield_)
+    in
+    playfield
+        |> redraw position.point1
+        |> redraw position.point2
+        |> redraw position.point3
+        |> redraw position.point4
+
+
+removePieceFromPlayfield : Piece -> Playfield -> Playfield
+removePieceFromPlayfield piece playfield =
+    -- Get the four elements from the playfield that correspond to the four parts of piece.location
+    -- At those playfield elements, replace whatever is there with an empty space.
+    let
+        str =
+            "`"
+
+        position =
+            getPosition piece
+
+        redraw ( x_, y_ ) playfield_ =
+            Array.get y_ playfield_
+                |> Maybe.withDefault Array.empty
+                |> Array.set x_ str
+                |> (\newLine -> Array.set y_ newLine playfield_)
+    in
+    playfield
+        |> redraw position.point1
+        |> redraw position.point2
+        |> redraw position.point3
+        |> redraw position.point4
+
+
+getPositionTempHelper : Position -> ( Int, Int )
+getPositionTempHelper position =
+    position.point1
 
 
 showPlayfield : Playfield -> Html Msg
