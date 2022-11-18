@@ -14,9 +14,9 @@ import Time
 
 
 {-
-   TODO Refactor Piece abstraction
    TODO Display controls + any quick UI prettifying
    TODO Deploy to GitHub :D
+   TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation
    TODO 180 degree rotation
    TODO Show next piece
@@ -39,42 +39,23 @@ main =
 
 
 type alias Model =
-    { playfield : Playfield
-    , activePiece : Piece
+    { activePiece : Piece
+    , playfield : Playfield
     }
-
-
-type alias Playfield =
-    Array (Array Space)
-
-
-type alias SecondsElapsed =
-    Int
 
 
 type Piece
-    = O Position RotationState
-    | I Position RotationState
-    | Z Position RotationState
-    | S Position RotationState
-    | L Position RotationState
-    | J Position RotationState
-    | T Position RotationState
+    = Piece Shape Position RotationState
 
 
-type RotationState
-    = Rotated0
-    | Rotated90
-    | Rotated180
-    | Rotated270
-
-
-type alias RotationDelta =
-    { d1 : ( Int, Int )
-    , d2 : ( Int, Int )
-    , d3 : ( Int, Int )
-    , d4 : ( Int, Int )
-    }
+type Shape
+    = I
+    | O
+    | T
+    | S
+    | Z
+    | J
+    | L
 
 
 type alias Position =
@@ -85,20 +66,32 @@ type alias Position =
     }
 
 
+type RotationState
+    = Rotated0
+    | Rotated90
+    | Rotated180
+    | Rotated270
+
+
 type WhichWay
     = Left
     | Right
     | Down
 
 
-type alias Space =
-    String
+type alias Playfield =
+    Array (Array Space)
+
+
+type Space
+    = Filled Shape
+    | Empty
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { playfield = addPieceToPlayfield (O oInitPosition Rotated0) emptyPlayfield
-      , activePiece = O oInitPosition Rotated0
+    ( { activePiece = initPieceTemp
+      , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
       }
     , Cmd.none
     )
@@ -109,22 +102,19 @@ init _ =
 
 
 type Msg
-    = Tick Time.Posix
-    | MoveLeft
+    = MoveLeft
     | MoveRight
     | SoftDrop
     | HardDrop
     | RotateClockwise
     | NewPiece Piece
+    | Tick Time.Posix
     | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick time ->
-            maybeLockPiece (maybeRefreshPlayfield model Down)
-
         MoveLeft ->
             ( maybeRefreshPlayfield model Left, Cmd.none )
 
@@ -143,6 +133,9 @@ update msg model =
         NewPiece piece ->
             ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
 
+        Tick time ->
+            maybeLockPiece (maybeRefreshPlayfield model Down)
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -160,7 +153,7 @@ canPieceMoveThatWay : Model -> WhichWay -> Bool
 canPieceMoveThatWay model whichWay =
     let
         destination =
-            getPosition <| movePiece model.activePiece whichWay
+            getPosition (movePiece model.activePiece whichWay)
     in
     isWithinPlayfieldBounds destination && areSpacesEmpty destination model
 
@@ -169,7 +162,7 @@ canPieceRotateThatWay : Model -> Bool
 canPieceRotateThatWay model =
     let
         destination =
-            getPosition <| rotateClockwiseHelper model.activePiece
+            getPosition (rotateClockwiseHelper model.activePiece)
     in
     isWithinPlayfieldBounds destination && areSpacesEmpty destination model
 
@@ -181,7 +174,7 @@ areSpacesEmpty destination model =
             removePieceFromPlayfield model.activePiece model.playfield
 
         isSpaceEmpty_ playfield_ ( x_, y_ ) =
-            isSpaceEmpty <| getSpaceAt ( x_, y_ ) playfield_
+            isSpaceEmpty (getSpaceAt ( x_, y_ ) playfield_)
     in
     List.all (isSpaceEmpty_ playfieldWithoutActivePiece) (positionToList destination)
 
@@ -264,7 +257,10 @@ goDown numSpaces pos =
 rotateClockwise : Model -> Model
 rotateClockwise model =
     if canPieceRotateThatWay model then
-        { model | activePiece = rotateClockwiseHelper model.activePiece, playfield = refreshPlayfieldHelper model.activePiece (rotateClockwiseHelper model.activePiece) model.playfield }
+        { model
+            | activePiece = rotateClockwiseHelper model.activePiece
+            , playfield = refreshPlayfieldHelper model.activePiece (rotateClockwiseHelper model.activePiece) model.playfield
+        }
 
     else
         model
@@ -273,60 +269,15 @@ rotateClockwise model =
 rotateClockwiseHelper : Piece -> Piece
 rotateClockwiseHelper piece =
     piece
-        |> changeRotationState
+        |> setRotationState
         |> rotatePosition
-
-
-getRotationState : Piece -> RotationState
-getRotationState piece =
-    case piece of
-        I _ rotationState ->
-            rotationState
-
-        Z _ rotationState ->
-            rotationState
-
-        T _ rotationState ->
-            rotationState
-
-        J _ rotationState ->
-            rotationState
-
-        L _ rotationState ->
-            rotationState
-
-        O _ rotationState ->
-            rotationState
-
-        S _ _ ->
-            Rotated0
 
 
 {-| Assume clockwise.
 -}
-changeRotationState : Piece -> Piece
-changeRotationState piece =
-    case piece of
-        I position rotationState ->
-            I position (cycleRotationState rotationState)
-
-        Z position rotationState ->
-            Z position (cycleRotationState rotationState)
-
-        T position rotationState ->
-            T position (cycleRotationState rotationState)
-
-        J position rotationState ->
-            J position (cycleRotationState rotationState)
-
-        L position rotationState ->
-            L position (cycleRotationState rotationState)
-
-        O position rotationState ->
-            O position (cycleRotationState rotationState)
-
-        S position rotationState ->
-            S position (cycleRotationState rotationState)
+setRotationState : Piece -> Piece
+setRotationState (Piece shape position rotationState) =
+    Piece shape position (cycleRotationState rotationState)
 
 
 {-| Assume clockwise.
@@ -352,85 +303,93 @@ rotatePosition piece =
     applyRotationDelta (getRotationDelta piece) piece
 
 
+type alias RotationDelta =
+    { d1 : ( Int, Int )
+    , d2 : ( Int, Int )
+    , d3 : ( Int, Int )
+    , d4 : ( Int, Int )
+    }
+
+
 {-| Eventually this should handle counterclockwise. Assume clockwise for now.
 -}
 getRotationDelta : Piece -> RotationDelta
-getRotationDelta piece =
-    case piece of
-        I _ Rotated90 ->
+getRotationDelta (Piece shape _ rotationState) =
+    case ( shape, rotationState ) of
+        ( I, Rotated90 ) ->
             buildRotationDelta ( 2, -1 ) ( 1, 0 ) ( 0, 1 ) ( -1, 2 )
 
-        I _ Rotated180 ->
+        ( I, Rotated180 ) ->
             buildRotationDelta ( -2, 2 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
 
-        I _ Rotated270 ->
+        ( I, Rotated270 ) ->
             buildRotationDelta ( 1, -2 ) ( 0, -1 ) ( -1, 0 ) ( -2, 1 )
 
-        I _ Rotated0 ->
+        ( I, Rotated0 ) ->
             buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 2, -2 )
 
-        Z _ Rotated90 ->
-            buildRotationDelta ( 2, 0 ) ( 1, 1 ) ( 0, 0 ) ( -1, 1 )
-
-        Z _ Rotated180 ->
-            buildRotationDelta ( 0, 2 ) ( -1, 1 ) ( 0, 0 ) ( -1, -1 )
-
-        Z _ Rotated270 ->
-            buildRotationDelta ( -2, 0 ) ( -1, -1 ) ( 0, 0 ) ( 1, -1 )
-
-        Z _ Rotated0 ->
-            buildRotationDelta ( 0, -2 ) ( 1, -1 ) ( 0, 0 ) ( 1, 1 )
-
-        T _ Rotated90 ->
-            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( -1, 1 )
-
-        T _ Rotated180 ->
-            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -1, -1 )
-
-        T _ Rotated270 ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 1, -1 )
-
-        T _ Rotated0 ->
-            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 1, 1 )
-
-        J _ Rotated90 ->
-            buildRotationDelta ( 2, 0 ) ( 1, -1 ) ( 0, 0 ) ( -1, 1 )
-
-        J _ Rotated180 ->
-            buildRotationDelta ( 0, 2 ) ( 1, 1 ) ( 0, 0 ) ( -1, -1 )
-
-        J _ Rotated270 ->
-            buildRotationDelta ( -2, 0 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
-
-        J _ Rotated0 ->
-            buildRotationDelta ( 0, -2 ) ( -1, -1 ) ( 0, 0 ) ( 1, 1 )
-
-        L _ Rotated90 ->
-            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( -1, 1 ) ( 0, 2 )
-
-        L _ Rotated180 ->
-            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, -1 ) ( -2, 0 )
-
-        L _ Rotated270 ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 0, -2 )
-
-        L _ Rotated0 ->
-            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 2, 0 )
-
-        O _ _ ->
+        ( O, _ ) ->
             buildRotationDelta ( 0, 0 ) ( 0, 0 ) ( 0, 0 ) ( 0, 0 )
 
-        S _ Rotated90 ->
+        ( T, Rotated90 ) ->
+            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( -1, 1 )
+
+        ( T, Rotated180 ) ->
+            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -1, -1 )
+
+        ( T, Rotated270 ) ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 1, -1 )
+
+        ( T, Rotated0 ) ->
+            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 1, 1 )
+
+        ( S, Rotated90 ) ->
             buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 0, 2 )
 
-        S _ Rotated180 ->
+        ( S, Rotated180 ) ->
             buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -2, 0 )
 
-        S _ Rotated270 ->
+        ( S, Rotated270 ) ->
             buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 0, -2 )
 
-        S _ Rotated0 ->
+        ( S, Rotated0 ) ->
             buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 2, 0 )
+
+        ( Z, Rotated90 ) ->
+            buildRotationDelta ( 2, 0 ) ( 1, 1 ) ( 0, 0 ) ( -1, 1 )
+
+        ( Z, Rotated180 ) ->
+            buildRotationDelta ( 0, 2 ) ( -1, 1 ) ( 0, 0 ) ( -1, -1 )
+
+        ( Z, Rotated270 ) ->
+            buildRotationDelta ( -2, 0 ) ( -1, -1 ) ( 0, 0 ) ( 1, -1 )
+
+        ( Z, Rotated0 ) ->
+            buildRotationDelta ( 0, -2 ) ( 1, -1 ) ( 0, 0 ) ( 1, 1 )
+
+        ( J, Rotated90 ) ->
+            buildRotationDelta ( 2, 0 ) ( 1, -1 ) ( 0, 0 ) ( -1, 1 )
+
+        ( J, Rotated180 ) ->
+            buildRotationDelta ( 0, 2 ) ( 1, 1 ) ( 0, 0 ) ( -1, -1 )
+
+        ( J, Rotated270 ) ->
+            buildRotationDelta ( -2, 0 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
+
+        ( J, Rotated0 ) ->
+            buildRotationDelta ( 0, -2 ) ( -1, -1 ) ( 0, 0 ) ( 1, 1 )
+
+        ( L, Rotated90 ) ->
+            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( -1, 1 ) ( 0, 2 )
+
+        ( L, Rotated180 ) ->
+            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, -1 ) ( -2, 0 )
+
+        ( L, Rotated270 ) ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 0, -2 )
+
+        ( L, Rotated0 ) ->
+            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 2, 0 )
 
 
 buildRotationDelta : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> RotationDelta
@@ -481,53 +440,13 @@ mapPosition fn pos =
 
 
 setPosition : Position -> Piece -> Piece
-setPosition newPosition piece =
-    case piece of
-        O _ rotationState ->
-            O newPosition rotationState
-
-        I _ rotationState ->
-            I newPosition rotationState
-
-        Z _ rotationState ->
-            Z newPosition rotationState
-
-        S _ rotationState ->
-            S newPosition rotationState
-
-        L _ rotationState ->
-            L newPosition rotationState
-
-        J _ rotationState ->
-            J newPosition rotationState
-
-        T _ rotationState ->
-            T newPosition rotationState
+setPosition newPosition (Piece shape _ rotationState) =
+    Piece shape newPosition rotationState
 
 
 getPosition : Piece -> Position
-getPosition piece =
-    case piece of
-        O position _ ->
-            position
-
-        I position _ ->
-            position
-
-        Z position _ ->
-            position
-
-        S position _ ->
-            position
-
-        L position _ ->
-            position
-
-        J position _ ->
-            position
-
-        T position _ ->
-            position
+getPosition (Piece _ position _) =
+    position
 
 
 leftLimit : Int
@@ -574,7 +493,7 @@ hardDropHelper : Model -> Bool -> Int -> Int
 hardDropHelper model shouldContinue counter =
     case shouldContinue of
         True ->
-            hardDropHelper { model | activePiece = movePiece model.activePiece Down } (not <| isPieceStuck model) (counter + 1)
+            hardDropHelper { model | activePiece = movePiece model.activePiece Down } (not (isPieceStuck model)) (counter + 1)
 
         False ->
             counter
@@ -615,8 +534,8 @@ maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
-        ( { playfield = addPieceToPlayfield (O oInitPosition Rotated0) emptyPlayfield
-          , activePiece = O oInitPosition Rotated0
+        ( { activePiece = initPieceTemp
+          , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
           }
         , Cmd.none
         )
@@ -630,29 +549,29 @@ maybeLockPiece model =
 
 lockPiece : Model -> Model
 lockPiece model =
-    { model | playfield = addPieceToPlayfield (O oInitPosition Rotated0) (clearLines model.playfield), activePiece = O oInitPosition Rotated0 }
+    { model | playfield = addPieceToPlayfield initPieceTemp (clearLines model.playfield), activePiece = initPieceTemp }
 
 
-isLineFull : Array Space -> Bool
-isLineFull line =
-    List.all isSpaceFull (Array.toList line)
+isLineFilled : Array Space -> Bool
+isLineFilled line =
+    List.all isSpaceFilled (Array.toList line)
 
 
-isSpaceFull : Space -> Bool
-isSpaceFull space =
+isSpaceFilled : Space -> Bool
+isSpaceFilled space =
     space /= emptySpace
 
 
 isSpaceEmpty : Space -> Bool
 isSpaceEmpty space =
-    not <| isSpaceFull space
+    not (isSpaceFilled space)
 
 
 clearLines : Playfield -> Playfield
 clearLines playfield =
     let
         playfieldSubsetWithClearedLines =
-            Array.filter (\line -> not (isLineFull line)) playfield
+            Array.filter (\line -> not (isLineFilled line)) playfield
 
         numClearedLines =
             Array.length emptyPlayfield - Array.length playfieldSubsetWithClearedLines
@@ -693,77 +612,7 @@ keyToAction string =
 
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
-    Random.uniform (O oInitPosition Rotated0)
-        [ I iInitPosition Rotated0
-        , L lInitPosition Rotated0
-        , J jInitPosition Rotated0
-        , Z zInitPosition Rotated0
-        , S sInitPosition Rotated0
-        , T tInitPosition Rotated0
-        ]
-
-
-oInitPosition : Position
-oInitPosition =
-    { point1 = ( 3, 0 )
-    , point2 = ( 4, 0 )
-    , point3 = ( 4, 1 )
-    , point4 = ( 3, 1 )
-    }
-
-
-iInitPosition : Position
-iInitPosition =
-    { point1 = ( 3, 0 )
-    , point2 = ( 4, 0 )
-    , point3 = ( 5, 0 )
-    , point4 = ( 6, 0 )
-    }
-
-
-lInitPosition : Position
-lInitPosition =
-    { point1 = ( 3, 1 )
-    , point2 = ( 4, 1 )
-    , point3 = ( 5, 1 )
-    , point4 = ( 5, 0 )
-    }
-
-
-jInitPosition : Position
-jInitPosition =
-    { point1 = ( 3, 0 )
-    , point2 = ( 3, 1 )
-    , point3 = ( 4, 1 )
-    , point4 = ( 5, 1 )
-    }
-
-
-zInitPosition : Position
-zInitPosition =
-    { point1 = ( 3, 0 )
-    , point2 = ( 4, 0 )
-    , point3 = ( 4, 1 )
-    , point4 = ( 5, 1 )
-    }
-
-
-sInitPosition : Position
-sInitPosition =
-    { point1 = ( 3, 1 )
-    , point2 = ( 4, 1 )
-    , point3 = ( 4, 0 )
-    , point4 = ( 5, 0 )
-    }
-
-
-tInitPosition : Position
-tInitPosition =
-    { point1 = ( 3, 2 )
-    , point2 = ( 4, 2 )
-    , point3 = ( 4, 1 )
-    , point4 = ( 5, 2 )
-    }
+    Random.uniform (buildPiece I) (List.map buildPiece [ O, T, S, Z, J, L ])
 
 
 newPiece : Cmd Msg
@@ -771,15 +620,53 @@ newPiece =
     Random.generate NewPiece randomPieceHelper
 
 
+initPieceTemp : Piece
+initPieceTemp =
+    buildPiece O
 
--- VIEW
+
+buildPiece : Shape -> Piece
+buildPiece shape =
+    Piece shape (initialPosition shape) initialRotationState
 
 
-view : Model -> Html Msg
-view { playfield, activePiece } =
-    div []
-        [ showPlayfield playfield
-        ]
+initialRotationState : RotationState
+initialRotationState =
+    Rotated0
+
+
+initialPosition : Shape -> Position
+initialPosition shape =
+    case shape of
+        I ->
+            buildPosition ( 3, 0 ) ( 4, 0 ) ( 5, 0 ) ( 6, 0 )
+
+        O ->
+            buildPosition ( 3, 0 ) ( 4, 0 ) ( 4, 1 ) ( 3, 1 )
+
+        T ->
+            buildPosition ( 3, 2 ) ( 4, 2 ) ( 4, 1 ) ( 5, 2 )
+
+        S ->
+            buildPosition ( 3, 1 ) ( 4, 1 ) ( 4, 0 ) ( 5, 0 )
+
+        Z ->
+            buildPosition ( 3, 0 ) ( 4, 0 ) ( 4, 1 ) ( 5, 1 )
+
+        J ->
+            buildPosition ( 3, 0 ) ( 3, 1 ) ( 4, 1 ) ( 5, 1 )
+
+        L ->
+            buildPosition ( 3, 1 ) ( 4, 1 ) ( 5, 1 ) ( 5, 0 )
+
+
+buildPosition : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> Position
+buildPosition p1 p2 p3 p4 =
+    { point1 = p1
+    , point2 = p2
+    , point3 = p3
+    , point4 = p4
+    }
 
 
 emptyPlayfield : Playfield
@@ -794,7 +681,7 @@ emptyLine =
 
 addPieceToPlayfield : Piece -> Playfield -> Playfield
 addPieceToPlayfield piece playfield =
-    updatePieceOnPlayfield (pieceToString piece) piece playfield
+    updatePieceOnPlayfield (pieceToSpace piece) piece playfield
 
 
 removePieceFromPlayfield : Piece -> Playfield -> Playfield
@@ -823,6 +710,17 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
         |> (\newLine -> Array.set y newLine playfield)
 
 
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view { playfield, activePiece } =
+    div []
+        [ showPlayfield playfield
+        ]
+
+
 showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
     div
@@ -842,11 +740,11 @@ showLine line =
 
 showSpace : Space -> Html Msg
 showSpace space =
-    span [ style "color" (spaceToColor space) ] [ text (showShape space) ]
+    span [ style "color" (spaceToColor space) ] [ text (showBlock space) ]
 
 
-showShape : Space -> String
-showShape space =
+showBlock : Space -> String
+showBlock space =
     if space == emptySpace then
         "□"
 
@@ -857,67 +755,47 @@ showShape space =
 spaceToColor : Space -> String
 spaceToColor space =
     case space of
-        "O" ->
-            -- Yellow
-            "#FFF176"
-
-        "I" ->
+        Filled I ->
             -- Cyan
             "#4DD0E1"
 
-        "Z" ->
-            -- Pink
-            "#F06292"
+        Filled O ->
+            -- Yellow
+            "#FFF176"
 
-        "S" ->
-            -- Green
-            "#81C784"
-
-        "L" ->
-            -- Orange
-            "#E65100"
-
-        "J" ->
-            -- Blue
-            "#0D47A1"
-
-        "T" ->
+        Filled T ->
             -- Purple
             "#BA68C8"
 
-        _ ->
+        Filled S ->
+            -- Green
+            "#81C784"
+
+        Filled Z ->
+            -- Pink
+            "#F06292"
+
+        Filled J ->
+            -- Blue
+            "#0D47A1"
+
+        Filled L ->
+            -- Orange
+            "#E65100"
+
+        Empty ->
             -- Gray
             "#757575"
 
 
-pieceToString : Piece -> Space
-pieceToString piece =
-    case piece of
-        O _ _ ->
-            "O"
-
-        I _ _ ->
-            "I"
-
-        Z _ _ ->
-            "Z"
-
-        S _ _ ->
-            "S"
-
-        L _ _ ->
-            "L"
-
-        J _ _ ->
-            "J"
-
-        T _ _ ->
-            "T"
+pieceToSpace : Piece -> Space
+pieceToSpace (Piece shape _ _) =
+    Filled shape
 
 
 emptySpace : Space
 emptySpace =
-    "`"
+    Empty
 
 
 
