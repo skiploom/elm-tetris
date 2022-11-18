@@ -43,12 +43,19 @@ type alias SecondsElapsed =
 
 type Piece
     = O Position
-    | I Position
+    | I Position RotationState
     | Z Position
     | S Position
     | L Position
     | J Position
     | T Position
+
+
+type RotationState
+    = Rotated0
+    | Rotated90
+    | Rotated180
+    | Rotated270
 
 
 type alias Position =
@@ -135,22 +142,38 @@ canPieceMoveThatWay model whichWay =
     let
         destination =
             getPosition <| movePiece model.activePiece whichWay
+    in
+    isWithinPlayfieldBounds destination && areSpacesEmpty destination model
 
+
+canPieceRotateThatWay : Model -> Bool
+canPieceRotateThatWay model =
+    let
+        destination =
+            getPosition <| rotateClockwiseHelper model.activePiece
+    in
+    isWithinPlayfieldBounds destination && areSpacesEmpty destination model
+
+
+areSpacesEmpty : Position -> Model -> Bool
+areSpacesEmpty destination model =
+    let
         playfieldWithoutActivePiece =
             removePieceFromPlayfield model.activePiece model.playfield
 
         isSpaceEmpty_ playfield_ ( x_, y_ ) =
-            playfield_
-                |> Array.get y_
-                |> Maybe.withDefault Array.empty
-                |> Array.get x_
-                |> Maybe.withDefault emptySpace
-                |> isSpaceEmpty
-
-        areSpacesEmpty position =
-            List.all (isSpaceEmpty_ playfieldWithoutActivePiece) (positionToList position)
+            isSpaceEmpty <| getSpaceAt ( x_, y_ ) playfield_
     in
-    isWithinPlayfieldBounds destination && areSpacesEmpty destination
+    List.all (isSpaceEmpty_ playfieldWithoutActivePiece) (positionToList destination)
+
+
+getSpaceAt : ( Int, Int ) -> Playfield -> Space
+getSpaceAt ( x, y ) playfield =
+    playfield
+        |> Array.get y
+        |> Maybe.withDefault Array.empty
+        |> Array.get x
+        |> Maybe.withDefault emptySpace
 
 
 isWithinPlayfieldBounds : Position -> Bool
@@ -171,18 +194,20 @@ positionToList pos =
 refreshPlayfield : Model -> WhichWay -> Model
 refreshPlayfield model whichWay =
     let
-        oldPiece =
-            model.activePiece
-
         movedPiece =
             movePiece model.activePiece whichWay
 
         newPlayfield =
-            model.playfield
-                |> removePieceFromPlayfield oldPiece
-                |> addPieceToPlayfield movedPiece
+            refreshPlayfieldHelper model.activePiece movedPiece model.playfield
     in
     { model | activePiece = movedPiece, playfield = newPlayfield }
+
+
+refreshPlayfieldHelper : Piece -> Piece -> Playfield -> Playfield
+refreshPlayfieldHelper oldPiece newPiece_ playfield =
+    playfield
+        |> removePieceFromPlayfield oldPiece
+        |> addPieceToPlayfield newPiece_
 
 
 movePiece : Piece -> WhichWay -> Piece
@@ -219,60 +244,107 @@ goDown numSpaces pos =
 
 rotateClockwise : Model -> Model
 rotateClockwise model =
-    -- Try to rotate activePiece clockwise, depending on:
-    --   1. Its current "rotation state"
-    --   2. If it will collide
-    --
-    -- First pass:
-    -- Don't worry about #2.
-    -- Just get each piece to rotate.
-    -- Let's hardcode the "deltas" between the I block in its
-    -- horizontal state and its vertical state.
-    -- So on "up key press", the I block should switch between
-    -- horizontal and vertical.
-    --
-    -- Then we can care about the I block's proper "4 rotation states"
-    -- next.
-    --
-    -- Then work out collisions.
-    --
-    -- Then work on the next pieces.
-    --
-    -- Don't worry about code cleanliness just yet.
-    --
-    -- Current state of I block:
-    -- It always has position of {(n, y), (n+1, y), (n+2, y), (n+3, y)}
-    -- i.e.
-    -- {(1, 4), (2, 4), (3, 4), (4, 4)}
-    --
-    -- After rotation clockwise (first time from initial), it should be at:
-    -- {(2, 3), (2,4), (2,5), (2,6)}
-    -- (We are arbitrarily assuming that the (1,4) block, aka the second block
-    -- is the center of rotation and so it will remain static. We can check the
-    -- tetris guideline later to see the true behaviorm, but ignore for now.)
-    --
-    -- If we rotate again (second time from initial), then it should be at:
-    -- {(3, 4), (2,4), (1,4), (0, 4)}
-    --
-    -- Rotating again-again (third time from initial) should give:
-    -- {(2, 5), (2,4), (2,3), (2, 2)}
-    --
-    -- Fourth and final rotation should give:
-    -- {(1, 4), (2,4), (3,4), (4, 4)}
-    -- (This happens to be same state as when it started.)
-    --
-    -- So there are four rotation states:
-    -- 1. 0 degrees
-    -- 2. 90
-    -- 3. 180
-    -- 4. 270
-    --
-    -- And the deltas (specifically for I-block), between state-to-state:
-    -- 0: {(0,0), (0,0), (0,0), (0,0)}
-    -- 90: {(+1,-1), (+0,+0), (-1,+1), (-2,+2)}
-    -- 180: {(-1,+1), (+0,+0), (+1,-1), (+2,-2)}
-    -- 270: {(-1,-1), (+0,+0), (+1,+1), (+2,+2)}
-    model
+    if canPieceRotateThatWay model then
+        { model | activePiece = rotateClockwiseHelper model.activePiece, playfield = refreshPlayfieldHelper model.activePiece (rotateClockwiseHelper model.activePiece) model.playfield }
+
+    else
+        model
+
+
+rotateClockwiseHelper : Piece -> Piece
+rotateClockwiseHelper piece =
+    piece
+        |> changeRotationState
+        |> rotatePosition
+
+
+getRotationState : Piece -> RotationState
+getRotationState piece =
+    case piece of
+        I _ rotationState ->
+            rotationState
+
+        _ ->
+            Rotated0
+
+
+{-| Assume clockwise.
+-}
+changeRotationState : Piece -> Piece
+changeRotationState piece =
+    case piece of
+        I position rotationState ->
+            I position (cycleRotationState rotationState)
+
+        _ ->
+            piece
+
+
+{-| Assume clockwise.
+-}
+cycleRotationState : RotationState -> RotationState
+cycleRotationState currentState =
+    case currentState of
+        Rotated0 ->
+            Rotated90
+
+        Rotated90 ->
+            Rotated180
+
+        Rotated180 ->
+            Rotated270
+
+        Rotated270 ->
+            Rotated0
+
+
+{-| Assume clockwise.
+-}
+rotatePosition : Piece -> Piece
+rotatePosition piece =
+    case piece of
+        I pos Rotated90 ->
+            I
+                { pos
+                    | point1 = Tuple.mapBoth ((+) 1) ((+) -1) pos.point1
+                    , point2 = pos.point2
+                    , point3 = Tuple.mapBoth ((+) -1) ((+) 1) pos.point3
+                    , point4 = Tuple.mapBoth ((+) -2) ((+) 2) pos.point4
+                }
+                Rotated90
+
+        I pos Rotated180 ->
+            I
+                { pos
+                    | point1 = Tuple.mapBoth ((+) 1) ((+) 1) pos.point1
+                    , point2 = pos.point2
+                    , point3 = Tuple.mapBoth ((+) -1) ((+) -1) pos.point3
+                    , point4 = Tuple.mapBoth ((+) -2) ((+) -2) pos.point4
+                }
+                Rotated180
+
+        I pos Rotated270 ->
+            I
+                { pos
+                    | point1 = Tuple.mapBoth ((+) -1) ((+) 1) pos.point1
+                    , point2 = pos.point2
+                    , point3 = Tuple.mapBoth ((+) 1) ((+) -1) pos.point3
+                    , point4 = Tuple.mapBoth ((+) 2) ((+) -2) pos.point4
+                }
+                Rotated270
+
+        I pos Rotated0 ->
+            I
+                { pos
+                    | point1 = Tuple.mapBoth ((+) -1) ((+) -1) pos.point1
+                    , point2 = pos.point2
+                    , point3 = Tuple.mapBoth ((+) 1) ((+) 1) pos.point3
+                    , point4 = Tuple.mapBoth ((+) 2) ((+) 2) pos.point4
+                }
+                Rotated0
+
+        _ ->
+            piece
 
 
 mapPosition : (( Int, Int ) -> ( Int, Int )) -> Position -> Position
@@ -291,8 +363,8 @@ setPosition newPosition piece =
         O _ ->
             O newPosition
 
-        I _ ->
-            I newPosition
+        I _ rotationState ->
+            I newPosition rotationState
 
         Z _ ->
             Z newPosition
@@ -316,7 +388,7 @@ getPosition piece =
         O position ->
             position
 
-        I position ->
+        I position _ ->
             position
 
         Z position ->
@@ -499,7 +571,7 @@ keyToAction string =
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
     Random.uniform (O oInitPosition)
-        [ I iInitPosition
+        [ I iInitPosition Rotated0
         , L lInitPosition
         , J jInitPosition
         , Z zInitPosition
@@ -701,7 +773,7 @@ pieceToString piece =
         O _ ->
             "O"
 
-        I _ ->
+        I _ _ ->
             "I"
 
         Z _ ->
