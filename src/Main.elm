@@ -14,7 +14,6 @@ import Time
 
 
 {-
-   -- TODO Randomize which piece is generated
    -- TODO Make pieces not just one space large
    -- TODO Make simple clockwise rotation logic
 -}
@@ -225,6 +224,20 @@ goDownNew curr =
     }
 
 
+goDownNewNew : Int -> Position -> Position
+goDownNewNew numSpaces curr =
+    let
+        foo y =
+            min downLimit (y + numSpaces)
+    in
+    { curr
+        | point1 = Tuple.mapSecond foo curr.point1
+        , point2 = Tuple.mapSecond foo curr.point2
+        , point3 = Tuple.mapSecond foo curr.point3
+        , point4 = Tuple.mapSecond foo curr.point4
+    }
+
+
 goLeft : Int -> Int
 goLeft curr =
     max leftLimit (curr - 1)
@@ -308,23 +321,36 @@ downLimit =
 hardDrop : Model -> Model
 hardDrop model =
     let
-        ( x, y ) =
-            getPositionTempHelper <| getPosition model.activePiece
+        playfieldWithoutActivePiece =
+            removePieceFromPlayfield model.activePiece model.playfield
 
-        highestFilledY =
-            findIndexForHardDrop <|
-                findFilledSpaceIndicesInColumn <|
-                    extractColumn x model.playfield
+        -- Try to find the highest space as early as possible by constantly going down until
+        -- a filled space is hit.
+        numMovableSpacesDown =
+            hardDropHelper { model | playfield = playfieldWithoutActivePiece } True -1
+
+        destination =
+            goDownNewNew numMovableSpacesDown (getPosition model.activePiece)
 
         movedPiece =
-            setPosition (setPositionTempHelper ( x, max 0 (highestFilledY - 1) )) model.activePiece
+            setPosition destination model.activePiece
 
         newPlayfield =
-            model.playfield
-                |> removePieceFromPlayfield model.activePiece
-                |> addPieceToPlayfield movedPiece
+            addPieceToPlayfield movedPiece playfieldWithoutActivePiece
     in
-    lockPiece { model | activePiece = movedPiece, playfield = newPlayfield }
+    { model | activePiece = movedPiece, playfield = newPlayfield }
+
+
+{-| Finds how many spaces the active piece can move down before colliding with existing pieces
+-}
+hardDropHelper : Model -> Bool -> Int -> Int
+hardDropHelper model shouldContinue counter =
+    case shouldContinue of
+        True ->
+            hardDropHelper { model | activePiece = movePiece model.activePiece Down } (not <| isPieceStuck model) (counter + 1)
+
+        False ->
+            counter
 
 
 setPositionTempHelper : ( Int, Int ) -> Position
@@ -334,32 +360,6 @@ setPositionTempHelper point1 =
     , point3 = point1
     , point4 = point1
     }
-
-
-findIndexForHardDrop : List Int -> Int
-findIndexForHardDrop filledIndices =
-    case filledIndices of
-        [] ->
-            downLimit + 1
-
-        [ _ ] ->
-            downLimit + 1
-
-        atLeastTwo ->
-            List.Extra.getAt 1 atLeastTwo
-                |> Maybe.withDefault (downLimit + 1)
-
-
-{-| Includes the space filled by the currently active piece for simplicity
--}
-findFilledSpaceIndicesInColumn : Array Space -> List Int
-findFilledSpaceIndicesInColumn extractedColumn =
-    List.Extra.findIndices isSpaceFull (Array.toList extractedColumn)
-
-
-extractColumn : Int -> Playfield -> Array Space
-extractColumn columnNumber playfield =
-    Array.map (Array.get columnNumber >> Maybe.withDefault emptySpace) playfield
 
 
 isToppedOut : Model -> Bool
