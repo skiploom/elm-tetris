@@ -14,7 +14,18 @@ import Time
 
 
 {-
-   -- TODO Make simple clockwise rotation logic for all tetrominoes
+   TODO Refactor Piece abstraction
+   TODO Display controls + any quick UI prettifying
+   TODO Deploy to GitHub :D
+   TODO Counterclockwise rotation
+   TODO 180 degree rotation
+   TODO Show next piece
+   TODO Allow piece swapping/holding
+   TODO Fix piece randomizing to be more like Tetris Guideline
+   TODO Either kick tables or T-spins
+   TODO Either kick tables or T-spins
+   TODO Fix tucks (probably somnething to do with Tick and locking logic)
+
 -}
 -- MAIN
 
