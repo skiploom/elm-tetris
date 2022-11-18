@@ -14,7 +14,6 @@ import Time
 
 
 {-
-   -- TODO Make I-block rotation follow Tetris Guideline
    -- TODO Make simple clockwise rotation logic for all tetrominoes
 -}
 -- MAIN
@@ -43,13 +42,13 @@ type alias SecondsElapsed =
 
 
 type Piece
-    = O Position
+    = O Position RotationState
     | I Position RotationState
-    | Z Position
-    | S Position
-    | L Position
-    | J Position
-    | T Position
+    | Z Position RotationState
+    | S Position RotationState
+    | L Position RotationState
+    | J Position RotationState
+    | T Position RotationState
 
 
 type RotationState
@@ -87,8 +86,8 @@ type alias Space =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { playfield = addPieceToPlayfield (O oInitPosition) emptyPlayfield
-      , activePiece = O oInitPosition
+    ( { playfield = addPieceToPlayfield (O oInitPosition Rotated0) emptyPlayfield
+      , activePiece = O oInitPosition Rotated0
       }
     , Cmd.none
     )
@@ -273,7 +272,22 @@ getRotationState piece =
         I _ rotationState ->
             rotationState
 
-        _ ->
+        Z _ rotationState ->
+            rotationState
+
+        T _ rotationState ->
+            rotationState
+
+        J _ rotationState ->
+            rotationState
+
+        L _ rotationState ->
+            rotationState
+
+        O _ rotationState ->
+            rotationState
+
+        S _ _ ->
             Rotated0
 
 
@@ -285,8 +299,23 @@ changeRotationState piece =
         I position rotationState ->
             I position (cycleRotationState rotationState)
 
-        _ ->
-            piece
+        Z position rotationState ->
+            Z position (cycleRotationState rotationState)
+
+        T position rotationState ->
+            T position (cycleRotationState rotationState)
+
+        J position rotationState ->
+            J position (cycleRotationState rotationState)
+
+        L position rotationState ->
+            L position (cycleRotationState rotationState)
+
+        O position rotationState ->
+            O position (cycleRotationState rotationState)
+
+        S position rotationState ->
+            S position (cycleRotationState rotationState)
 
 
 {-| Assume clockwise.
@@ -329,8 +358,68 @@ getRotationDelta piece =
         I _ Rotated0 ->
             buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 2, -2 )
 
-        _ ->
+        Z _ Rotated90 ->
+            buildRotationDelta ( 2, 0 ) ( 1, 1 ) ( 0, 0 ) ( -1, 1 )
+
+        Z _ Rotated180 ->
+            buildRotationDelta ( 0, 2 ) ( -1, 1 ) ( 0, 0 ) ( -1, -1 )
+
+        Z _ Rotated270 ->
+            buildRotationDelta ( -2, 0 ) ( -1, -1 ) ( 0, 0 ) ( 1, -1 )
+
+        Z _ Rotated0 ->
+            buildRotationDelta ( 0, -2 ) ( 1, -1 ) ( 0, 0 ) ( 1, 1 )
+
+        T _ Rotated90 ->
+            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( -1, 1 )
+
+        T _ Rotated180 ->
+            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -1, -1 )
+
+        T _ Rotated270 ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 1, -1 )
+
+        T _ Rotated0 ->
+            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 1, 1 )
+
+        J _ Rotated90 ->
+            buildRotationDelta ( 2, 0 ) ( 1, -1 ) ( 0, 0 ) ( -1, 1 )
+
+        J _ Rotated180 ->
+            buildRotationDelta ( 0, 2 ) ( 1, 1 ) ( 0, 0 ) ( -1, -1 )
+
+        J _ Rotated270 ->
+            buildRotationDelta ( -2, 0 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
+
+        J _ Rotated0 ->
+            buildRotationDelta ( 0, -2 ) ( -1, -1 ) ( 0, 0 ) ( 1, 1 )
+
+        L _ Rotated90 ->
+            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( -1, 1 ) ( 0, 2 )
+
+        L _ Rotated180 ->
+            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, -1 ) ( -2, 0 )
+
+        L _ Rotated270 ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 0, -2 )
+
+        L _ Rotated0 ->
+            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 2, 0 )
+
+        O _ _ ->
             buildRotationDelta ( 0, 0 ) ( 0, 0 ) ( 0, 0 ) ( 0, 0 )
+
+        S _ Rotated90 ->
+            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 0, 2 )
+
+        S _ Rotated180 ->
+            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -2, 0 )
+
+        S _ Rotated270 ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 0, -2 )
+
+        S _ Rotated0 ->
+            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 2, 0 )
 
 
 buildRotationDelta : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> RotationDelta
@@ -383,50 +472,50 @@ mapPosition fn pos =
 setPosition : Position -> Piece -> Piece
 setPosition newPosition piece =
     case piece of
-        O _ ->
-            O newPosition
+        O _ rotationState ->
+            O newPosition rotationState
 
         I _ rotationState ->
             I newPosition rotationState
 
-        Z _ ->
-            Z newPosition
+        Z _ rotationState ->
+            Z newPosition rotationState
 
-        S _ ->
-            S newPosition
+        S _ rotationState ->
+            S newPosition rotationState
 
-        L _ ->
-            L newPosition
+        L _ rotationState ->
+            L newPosition rotationState
 
-        J _ ->
-            J newPosition
+        J _ rotationState ->
+            J newPosition rotationState
 
-        T _ ->
-            T newPosition
+        T _ rotationState ->
+            T newPosition rotationState
 
 
 getPosition : Piece -> Position
 getPosition piece =
     case piece of
-        O position ->
+        O position _ ->
             position
 
         I position _ ->
             position
 
-        Z position ->
+        Z position _ ->
             position
 
-        S position ->
+        S position _ ->
             position
 
-        L position ->
+        L position _ ->
             position
 
-        J position ->
+        J position _ ->
             position
 
-        T position ->
+        T position _ ->
             position
 
 
@@ -515,8 +604,8 @@ maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
-        ( { playfield = addPieceToPlayfield (O oInitPosition) emptyPlayfield
-          , activePiece = O oInitPosition
+        ( { playfield = addPieceToPlayfield (O oInitPosition Rotated0) emptyPlayfield
+          , activePiece = O oInitPosition Rotated0
           }
         , Cmd.none
         )
@@ -530,7 +619,7 @@ maybeLockPiece model =
 
 lockPiece : Model -> Model
 lockPiece model =
-    { model | playfield = addPieceToPlayfield (O oInitPosition) (clearLines model.playfield), activePiece = O oInitPosition }
+    { model | playfield = addPieceToPlayfield (O oInitPosition Rotated0) (clearLines model.playfield), activePiece = O oInitPosition Rotated0 }
 
 
 isLineFull : Array Space -> Bool
@@ -593,13 +682,13 @@ keyToAction string =
 
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
-    Random.uniform (O oInitPosition)
+    Random.uniform (O oInitPosition Rotated0)
         [ I iInitPosition Rotated0
-        , L lInitPosition
-        , J jInitPosition
-        , Z zInitPosition
-        , S sInitPosition
-        , T tInitPosition
+        , L lInitPosition Rotated0
+        , J jInitPosition Rotated0
+        , Z zInitPosition Rotated0
+        , S sInitPosition Rotated0
+        , T tInitPosition Rotated0
         ]
 
 
@@ -626,7 +715,7 @@ lInitPosition =
     { point1 = ( 3, 1 )
     , point2 = ( 4, 1 )
     , point3 = ( 5, 1 )
-    , point4 = ( 5, 2 )
+    , point4 = ( 5, 0 )
     }
 
 
@@ -659,10 +748,10 @@ sInitPosition =
 
 tInitPosition : Position
 tInitPosition =
-    { point1 = ( 3, 1 )
-    , point2 = ( 4, 1 )
-    , point3 = ( 4, 2 )
-    , point4 = ( 5, 1 )
+    { point1 = ( 3, 2 )
+    , point2 = ( 4, 2 )
+    , point3 = ( 4, 1 )
+    , point4 = ( 5, 2 )
     }
 
 
@@ -793,25 +882,25 @@ spaceToColor space =
 pieceToString : Piece -> Space
 pieceToString piece =
     case piece of
-        O _ ->
+        O _ _ ->
             "O"
 
         I _ _ ->
             "I"
 
-        Z _ ->
+        Z _ _ ->
             "Z"
 
-        S _ ->
+        S _ _ ->
             "S"
 
-        L _ ->
+        L _ _ ->
             "L"
 
-        J _ ->
+        J _ _ ->
             "J"
 
-        T _ ->
+        T _ _ ->
             "T"
 
 
