@@ -14,7 +14,6 @@ import Time
 
 
 {-
-   -- TODO Make pieces not just one space large
    -- TODO Make simple clockwise rotation logic
 -}
 -- MAIN
@@ -72,16 +71,11 @@ type alias Space =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
-      , activePiece = O initialPosition
+    ( { playfield = addPieceToPlayfield (O oInitPosition) emptyPlayfield
+      , activePiece = O oInitPosition
       }
     , Cmd.none
     )
-
-
-initialPosition : Position
-initialPosition =
-    setPositionTempHelper ( 1, 0 )
 
 
 
@@ -365,8 +359,8 @@ maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
-        ( { playfield = addPieceToPlayfield (O initialPosition) emptyPlayfield
-          , activePiece = O initialPosition
+        ( { playfield = addPieceToPlayfield (O oInitPosition) emptyPlayfield
+          , activePiece = O oInitPosition
           }
         , Cmd.none
         )
@@ -380,7 +374,7 @@ maybeLockPiece model =
 
 lockPiece : Model -> Model
 lockPiece model =
-    { model | playfield = addPieceToPlayfield (O initialPosition) (clearLines model.playfield), activePiece = O initialPosition }
+    { model | playfield = addPieceToPlayfield (O oInitPosition) (clearLines model.playfield), activePiece = O oInitPosition }
 
 
 isLineFull : Array Space -> Bool
@@ -440,22 +434,76 @@ keyToAction string =
 
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
-    Random.uniform (O initialPosition)
-        [ I iPieceLocationTempHelper
-        , L initialPosition
-        , J initialPosition
-        , Z initialPosition
-        , S initialPosition
-        , T initialPosition
+    Random.uniform (O oInitPosition)
+        [ I iInitPosition
+        , L lInitPosition
+        , J jInitPosition
+        , Z zInitPosition
+        , S sInitPosition
+        , T tInitPosition
         ]
 
 
-iPieceLocationTempHelper : Position
-iPieceLocationTempHelper =
+oInitPosition : Position
+oInitPosition =
+    { point1 = ( 3, 0 )
+    , point2 = ( 4, 0 )
+    , point3 = ( 4, 1 )
+    , point4 = ( 3, 1 )
+    }
+
+
+iInitPosition : Position
+iInitPosition =
     { point1 = ( 3, 0 )
     , point2 = ( 4, 0 )
     , point3 = ( 5, 0 )
     , point4 = ( 6, 0 )
+    }
+
+
+lInitPosition : Position
+lInitPosition =
+    { point1 = ( 3, 1 )
+    , point2 = ( 4, 1 )
+    , point3 = ( 5, 1 )
+    , point4 = ( 5, 2 )
+    }
+
+
+jInitPosition : Position
+jInitPosition =
+    { point1 = ( 3, 0 )
+    , point2 = ( 3, 1 )
+    , point3 = ( 4, 1 )
+    , point4 = ( 5, 1 )
+    }
+
+
+zInitPosition : Position
+zInitPosition =
+    { point1 = ( 3, 0 )
+    , point2 = ( 4, 0 )
+    , point3 = ( 4, 1 )
+    , point4 = ( 5, 1 )
+    }
+
+
+sInitPosition : Position
+sInitPosition =
+    { point1 = ( 3, 1 )
+    , point2 = ( 4, 1 )
+    , point3 = ( 4, 0 )
+    , point4 = ( 5, 0 )
+    }
+
+
+tInitPosition : Position
+tInitPosition =
+    { point1 = ( 3, 1 )
+    , point2 = ( 4, 1 )
+    , point3 = ( 4, 2 )
+    , point4 = ( 5, 1 )
     }
 
 
