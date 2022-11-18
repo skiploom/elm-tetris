@@ -567,9 +567,10 @@ showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
     div
         [ style "font-family" "monospace"
-        , style "font-size" "1.5rem"
+        , style "font-size" "2.5rem"
         , style "text-align" "center"
         , style "padding" "1rem"
+        , style "line-height" "1.5rem"
         ]
         (Array.toList (Array.map showLine playfield))
 
@@ -581,7 +582,16 @@ showLine line =
 
 showSpace : Space -> Html Msg
 showSpace space =
-    span [ style "color" (spaceToColor space) ] [ text space ]
+    span [ style "color" (spaceToColor space) ] [ text (showShape space) ]
+
+
+showShape : Space -> String
+showShape space =
+    if space == emptySpace then
+        "□"
+
+    else
+        "▣"
 
 
 spaceToColor : Space -> String
@@ -616,8 +626,8 @@ spaceToColor space =
             "#BA68C8"
 
         _ ->
-            -- Light Gray
-            "#F5F5F5"
+            -- Gray
+            "#757575"
 
 
 pieceToString : Piece -> Space
