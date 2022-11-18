@@ -88,6 +88,7 @@ type Msg
     | MoveRight
     | SoftDrop
     | HardDrop
+    | RotateClockwise
     | NewPiece Piece
     | NoOp
 
@@ -109,6 +110,9 @@ update msg model =
 
         HardDrop ->
             ( hardDrop model, newPiece )
+
+        RotateClockwise ->
+            ( rotateClockwise model, Cmd.none )
 
         NewPiece piece ->
             ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
@@ -211,6 +215,64 @@ goRight numSpaces pos =
 goDown : Int -> Position -> Position
 goDown numSpaces pos =
     mapPosition (Tuple.mapSecond ((+) numSpaces)) pos
+
+
+rotateClockwise : Model -> Model
+rotateClockwise model =
+    -- Try to rotate activePiece clockwise, depending on:
+    --   1. Its current "rotation state"
+    --   2. If it will collide
+    --
+    -- First pass:
+    -- Don't worry about #2.
+    -- Just get each piece to rotate.
+    -- Let's hardcode the "deltas" between the I block in its
+    -- horizontal state and its vertical state.
+    -- So on "up key press", the I block should switch between
+    -- horizontal and vertical.
+    --
+    -- Then we can care about the I block's proper "4 rotation states"
+    -- next.
+    --
+    -- Then work out collisions.
+    --
+    -- Then work on the next pieces.
+    --
+    -- Don't worry about code cleanliness just yet.
+    --
+    -- Current state of I block:
+    -- It always has position of {(n, y), (n+1, y), (n+2, y), (n+3, y)}
+    -- i.e.
+    -- {(1, 4), (2, 4), (3, 4), (4, 4)}
+    --
+    -- After rotation clockwise (first time from initial), it should be at:
+    -- {(2, 3), (2,4), (2,5), (2,6)}
+    -- (We are arbitrarily assuming that the (1,4) block, aka the second block
+    -- is the center of rotation and so it will remain static. We can check the
+    -- tetris guideline later to see the true behaviorm, but ignore for now.)
+    --
+    -- If we rotate again (second time from initial), then it should be at:
+    -- {(3, 4), (2,4), (1,4), (0, 4)}
+    --
+    -- Rotating again-again (third time from initial) should give:
+    -- {(2, 5), (2,4), (2,3), (2, 2)}
+    --
+    -- Fourth and final rotation should give:
+    -- {(1, 4), (2,4), (3,4), (4, 4)}
+    -- (This happens to be same state as when it started.)
+    --
+    -- So there are four rotation states:
+    -- 1. 0 degrees
+    -- 2. 90
+    -- 3. 180
+    -- 4. 270
+    --
+    -- And the deltas (specifically for I-block), between state-to-state:
+    -- 0: {(0,0), (0,0), (0,0), (0,0)}
+    -- 90: {(+1,-1), (+0,+0), (-1,+1), (-2,+2)}
+    -- 180: {(-1,+1), (+0,+0), (+1,-1), (+2,-2)}
+    -- 270: {(-1,-1), (+0,+0), (+1,+1), (+2,+2)}
+    model
 
 
 mapPosition : (( Int, Int ) -> ( Int, Int )) -> Position -> Position
@@ -422,6 +484,9 @@ keyToAction string =
 
         "ArrowDown" ->
             SoftDrop
+
+        "ArrowUp" ->
+            RotateClockwise
 
         " " ->
             -- Space key
