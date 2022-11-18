@@ -323,18 +323,17 @@ hardDropHelper model shouldContinue counter =
             counter
 
 
-setPositionTempHelper : ( Int, Int ) -> Position
-setPositionTempHelper point1 =
-    { point1 = point1
-    , point2 = point1
-    , point3 = point1
-    , point4 = point1
-    }
-
-
 isToppedOut : Model -> Bool
 isToppedOut model =
-    (Tuple.second (getPositionTempHelper <| getPosition model.activePiece) == 0) && isPieceStuck model
+    isPieceAtTop model && isPieceStuck model
+
+
+isPieceAtTop : Model -> Bool
+isPieceAtTop model =
+    model.activePiece
+        |> getPosition
+        |> positionToList
+        |> List.any (\point -> Tuple.second point == 0)
 
 
 isPieceStuck : Model -> Bool
@@ -562,11 +561,6 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
         |> Maybe.withDefault Array.empty
         |> Array.set x newSpace
         |> (\newLine -> Array.set y newLine playfield)
-
-
-getPositionTempHelper : Position -> ( Int, Int )
-getPositionTempHelper position =
-    position.point1
 
 
 showPlayfield : Playfield -> Html Msg
