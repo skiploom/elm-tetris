@@ -134,9 +134,6 @@ maybeRefreshPlayfield model whichWay =
 
 canPieceMoveThatWay : Model -> WhichWay -> Bool
 canPieceMoveThatWay model whichWay =
-    -- First, naively remove the active piece from the playfield
-    -- Then, for each of the four spaces of the new location, check if those spaces are filled on the playfield
-    -- If ANY are filled, return false. OW, return true
     let
         destination =
             getPosition <| movePiece model.activePiece whichWay
@@ -151,8 +148,26 @@ canPieceMoveThatWay model whichWay =
                 |> Array.get x_
                 |> Maybe.withDefault emptySpace
                 |> isSpaceEmpty
+
+        areSpacesEmpty position =
+            List.all (isSpaceEmpty_ playfieldWithoutActivePiece) (positionToList position)
     in
-    List.all (isSpaceEmpty_ playfieldWithoutActivePiece) [ destination.point1, destination.point2, destination.point3, destination.point4 ]
+    isWithinPlayfieldBounds destination && areSpacesEmpty destination
+
+
+isWithinPlayfieldBounds : Position -> Bool
+isWithinPlayfieldBounds position =
+    List.all isWithinPlayfieldBoundsHelper (positionToList position)
+
+
+isWithinPlayfieldBoundsHelper : ( Int, Int ) -> Bool
+isWithinPlayfieldBoundsHelper ( x, y ) =
+    x >= leftLimit && x <= rightLimit && y >= 0 && y <= downLimit
+
+
+positionToList : Position -> List ( Int, Int )
+positionToList pos =
+    [ pos.point1, pos.point2, pos.point3, pos.point4 ]
 
 
 refreshPlayfield : Model -> WhichWay -> Model
@@ -240,17 +255,17 @@ goDownNewNew numSpaces curr =
 
 goLeft : Int -> Int
 goLeft curr =
-    max leftLimit (curr - 1)
+    curr - 1
 
 
 goRight : Int -> Int
 goRight curr =
-    min rightLimit (curr + 1)
+    curr + 1
 
 
 goDown : Int -> Int
 goDown curr =
-    min downLimit (curr + 1)
+    curr + 1
 
 
 setPosition : Position -> Piece -> Piece
@@ -385,15 +400,6 @@ isPieceAtBottom model =
         |> List.any ((==) downLimit)
 
 
-positionToList : Position -> List ( Int, Int )
-positionToList position =
-    [ position.point1
-    , position.point2
-    , position.point3
-    , position.point4
-    ]
-
-
 maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
@@ -485,10 +491,10 @@ randomPieceHelper =
 
 iPieceLocationTempHelper : Position
 iPieceLocationTempHelper =
-    { point1 = ( 1, 0 )
-    , point2 = ( 1, 1 )
-    , point3 = ( 1, 2 )
-    , point4 = ( 1, 3 )
+    { point1 = ( 3, 0 )
+    , point2 = ( 4, 0 )
+    , point3 = ( 5, 0 )
+    , point4 = ( 6, 0 )
     }
 
 
