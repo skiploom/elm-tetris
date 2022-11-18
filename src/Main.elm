@@ -14,7 +14,8 @@ import Time
 
 
 {-
-   -- TODO Make simple clockwise rotation logic
+   -- TODO Make I-block rotation follow Tetris Guideline
+   -- TODO Make simple clockwise rotation logic for all tetrominoes
 -}
 -- MAIN
 
@@ -56,6 +57,14 @@ type RotationState
     | Rotated90
     | Rotated180
     | Rotated270
+
+
+type alias RotationDelta =
+    { d1 : ( Int, Int )
+    , d2 : ( Int, Int )
+    , d3 : ( Int, Int )
+    , d4 : ( Int, Int )
+    }
 
 
 type alias Position =
@@ -298,53 +307,67 @@ cycleRotationState currentState =
             Rotated0
 
 
-{-| Assume clockwise.
--}
 rotatePosition : Piece -> Piece
 rotatePosition piece =
+    applyRotationDelta (getRotationDelta piece) piece
+
+
+{-| Eventually this should handle counterclockwise. Assume clockwise for now.
+-}
+getRotationDelta : Piece -> RotationDelta
+getRotationDelta piece =
     case piece of
-        I pos Rotated90 ->
-            I
-                { pos
-                    | point1 = Tuple.mapBoth ((+) 1) ((+) -1) pos.point1
-                    , point2 = pos.point2
-                    , point3 = Tuple.mapBoth ((+) -1) ((+) 1) pos.point3
-                    , point4 = Tuple.mapBoth ((+) -2) ((+) 2) pos.point4
-                }
-                Rotated90
+        I _ Rotated90 ->
+            buildRotationDelta ( 2, -1 ) ( 1, 0 ) ( 0, 1 ) ( -1, 2 )
 
-        I pos Rotated180 ->
-            I
-                { pos
-                    | point1 = Tuple.mapBoth ((+) 1) ((+) 1) pos.point1
-                    , point2 = pos.point2
-                    , point3 = Tuple.mapBoth ((+) -1) ((+) -1) pos.point3
-                    , point4 = Tuple.mapBoth ((+) -2) ((+) -2) pos.point4
-                }
-                Rotated180
+        I _ Rotated180 ->
+            buildRotationDelta ( -2, 2 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
 
-        I pos Rotated270 ->
-            I
-                { pos
-                    | point1 = Tuple.mapBoth ((+) -1) ((+) 1) pos.point1
-                    , point2 = pos.point2
-                    , point3 = Tuple.mapBoth ((+) 1) ((+) -1) pos.point3
-                    , point4 = Tuple.mapBoth ((+) 2) ((+) -2) pos.point4
-                }
-                Rotated270
+        I _ Rotated270 ->
+            buildRotationDelta ( 1, -2 ) ( 0, -1 ) ( -1, 0 ) ( -2, 1 )
 
-        I pos Rotated0 ->
-            I
-                { pos
-                    | point1 = Tuple.mapBoth ((+) -1) ((+) -1) pos.point1
-                    , point2 = pos.point2
-                    , point3 = Tuple.mapBoth ((+) 1) ((+) 1) pos.point3
-                    , point4 = Tuple.mapBoth ((+) 2) ((+) 2) pos.point4
-                }
-                Rotated0
+        I _ Rotated0 ->
+            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 2, -2 )
 
         _ ->
-            piece
+            buildRotationDelta ( 0, 0 ) ( 0, 0 ) ( 0, 0 ) ( 0, 0 )
+
+
+buildRotationDelta : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> RotationDelta
+buildRotationDelta d1 d2 d3 d4 =
+    { d1 = d1
+    , d2 = d2
+    , d3 = d3
+    , d4 = d4
+    }
+
+
+applyRotationDelta : RotationDelta -> Piece -> Piece
+applyRotationDelta { d1, d2, d3, d4 } piece =
+    let
+        pos =
+            getPosition piece
+
+        ( x1, y1 ) =
+            d1
+
+        ( x2, y2 ) =
+            d2
+
+        ( x3, y3 ) =
+            d3
+
+        ( x4, y4 ) =
+            d4
+    in
+    setPosition
+        { pos
+            | point1 = Tuple.mapBoth ((+) x1) ((+) y1) pos.point1
+            , point2 = Tuple.mapBoth ((+) x2) ((+) y2) pos.point2
+            , point3 = Tuple.mapBoth ((+) x3) ((+) y3) pos.point3
+            , point4 = Tuple.mapBoth ((+) x4) ((+) y4) pos.point4
+        }
+        piece
 
 
 mapPosition : (( Int, Int ) -> ( Int, Int )) -> Position -> Position
