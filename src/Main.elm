@@ -3,7 +3,7 @@ module Main exposing (..)
 import Array exposing (Array)
 import Browser
 import Browser.Events
-import Html exposing (Html, br, button, div, span, text)
+import Html exposing (Html, br, button, div, li, span, strong, text, ul)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Decode
@@ -14,7 +14,6 @@ import Time
 
 
 {-
-   TODO Display controls + any quick UI prettifying
    TODO Deploy to GitHub :D
    TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation
@@ -679,6 +678,16 @@ emptyLine =
     Array.repeat (rightLimit + 1) emptySpace
 
 
+pieceToSpace : Piece -> Space
+pieceToSpace (Piece shape _ _) =
+    Filled shape
+
+
+emptySpace : Space
+emptySpace =
+    Empty
+
+
 addPieceToPlayfield : Piece -> Playfield -> Playfield
 addPieceToPlayfield piece playfield =
     updatePieceOnPlayfield (pieceToSpace piece) piece playfield
@@ -716,8 +725,9 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 view : Model -> Html Msg
 view { playfield, activePiece } =
-    div []
+    div [ style "display" "flex", style "flex-direction" "column", style "align-items" "center" ]
         [ showPlayfield playfield
+        , showControls
         ]
 
 
@@ -726,8 +736,7 @@ showPlayfield playfield =
     div
         [ style "font-family" "monospace"
         , style "font-size" "2.5rem"
-        , style "text-align" "center"
-        , style "padding" "1rem"
+        , style "padding" "1.5rem"
         , style "line-height" "1.5rem"
         ]
         (Array.toList (Array.map showLine playfield))
@@ -788,14 +797,48 @@ spaceToColor space =
             "#757575"
 
 
-pieceToSpace : Piece -> Space
-pieceToSpace (Piece shape _ _) =
-    Filled shape
+showControls : Html Msg
+showControls =
+    let
+        ( keys, descriptions ) =
+            List.unzip controls
+    in
+    div [ style "font-family" "monospace", style "display" "flex" ]
+        [ showKeys keys
+        , showDescriptions descriptions
+        ]
 
 
-emptySpace : Space
-emptySpace =
-    Empty
+controls : List ( String, String )
+controls =
+    [ ( "left", "move left" )
+    , ( "right", "move right" )
+    , ( "up", "rotate clockwise" )
+    , ( "down", "soft drop" )
+    , ( "space", "hard drop" )
+    ]
+
+
+showKeys : List String -> Html Msg
+showKeys keys =
+    ul [ style "display" "flex", style "flex-direction" "column", style "align-items" "flex-start", style "padding" "0", style "list-style-type" "none", style "color" "#AED581" ]
+        (List.map showKey keys)
+
+
+showKey : String -> Html Msg
+showKey key =
+    li [] [ strong [] [ text key ] ]
+
+
+showDescriptions : List String -> Html Msg
+showDescriptions descriptions =
+    ul [ style "display" "flex", style "flex-direction" "column", style "align-items" "flex-end", style "list-style-type" "none", style "color" "#E0E0E0" ]
+        (List.map showDescription descriptions)
+
+
+showDescription : String -> Html Msg
+showDescription description =
+    li [] [ text description ]
 
 
 
