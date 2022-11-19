@@ -13,19 +13,6 @@ import Time
 
 
 
-{-
-   TODO Deploy to GitHub :D
-   TODO Allow first piece to be any piece, not just O
-   TODO Counterclockwise rotation
-   TODO 180 degree rotation
-   TODO Show next piece
-   TODO Allow piece swapping/holding
-   TODO Fix piece randomizing to be more like Tetris Guideline
-   TODO Either kick tables or T-spins
-   TODO Either kick tables or T-spins
-   TODO Fix tucks (probably somnething to do with Tick and locking logic)
-
--}
 -- MAIN
 
 
@@ -851,3 +838,18 @@ subscriptions _ =
         [ Time.every 1000 Tick
         , Browser.Events.onKeyDown keyDecoder
         ]
+
+
+
+{-
+   TODO Allow first piece to be any piece, not just O
+   TODO Counterclockwise rotation
+   TODO 180 degree rotation
+   TODO Show next piece
+   TODO Allow piece swapping/holding
+   TODO Fix piece randomizing to be more like Tetris Guideline
+   TODO Either kick tables or T-spins
+   TODO Either kick tables or T-spins
+   TODO Fix tucks (probably somnething to do with Tick and locking logic)
+
+-}
