@@ -94,12 +94,7 @@ type WindowSize
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
 init flags =
-    ( { activePiece = initPieceTemp
-      , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
-      , windowSize = decodeWindowFlags flags
-      }
-    , Cmd.none
-    )
+    newGame (decodeWindowFlags flags)
 
 
 
@@ -542,13 +537,7 @@ isPieceAtBottom model =
 maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
-        -- Start the game over.
-        ( { model
-            | activePiece = initPieceTemp
-            , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
-          }
-        , Cmd.none
-        )
+        newGame model.windowSize
 
     else if isPieceStuck model then
         ( model, newPiece )
@@ -557,9 +546,14 @@ maybeLockPiece model =
         ( model, Cmd.none )
 
 
-lockPiece : Model -> Model
-lockPiece model =
-    { model | playfield = addPieceToPlayfield initPieceTemp (clearLines model.playfield), activePiece = initPieceTemp }
+newGame : WindowSize -> ( Model, Cmd Msg )
+newGame windowSize =
+    ( { activePiece = initPieceTemp
+      , playfield = emptyPlayfield
+      , windowSize = windowSize
+      }
+    , newPiece
+    )
 
 
 isLineFilled : Array Space -> Bool
@@ -965,7 +959,6 @@ subscriptions _ =
 
 
 {-
-   TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation
    TODO 180 degree rotation
    TODO Show next piece
