@@ -7463,9 +7463,9 @@ var $author$project$Main$showBigSpace = function (space) {
 		$elm$svg$Svg$svg,
 		_List_fromArray(
 			[
-				$elm$svg$Svg$Attributes$width('42'),
-				$elm$svg$Svg$Attributes$height('42'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 42 42')
+				$elm$svg$Svg$Attributes$width('30'),
+				$elm$svg$Svg$Attributes$height('30'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 30 30')
 			]),
 		_List_fromArray(
 			[
@@ -7475,8 +7475,8 @@ var $author$project$Main$showBigSpace = function (space) {
 					[
 						$elm$svg$Svg$Attributes$x('1'),
 						$elm$svg$Svg$Attributes$y('1'),
-						$elm$svg$Svg$Attributes$width('40'),
-						$elm$svg$Svg$Attributes$height('40'),
+						$elm$svg$Svg$Attributes$width('28'),
+						$elm$svg$Svg$Attributes$height('28'),
 						$elm$svg$Svg$Attributes$fill(
 						$author$project$Main$spaceToColor(space)),
 						$elm$svg$Svg$Attributes$stroke('#757575'),

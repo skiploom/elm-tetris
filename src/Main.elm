@@ -815,8 +815,8 @@ showSpace space =
 
 showBigSpace : Space -> Html Msg
 showBigSpace space =
-    Svg.svg [ width "42", height "42", viewBox "0 0 42 42" ]
-        [ Svg.rect [ x "1", y "1", width "40", height "40", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
+    Svg.svg [ width "30", height "30", viewBox "0 0 30 30" ]
+        [ Svg.rect [ x "1", y "1", width "28", height "28", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
         ]
 
 
