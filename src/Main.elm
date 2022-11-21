@@ -867,28 +867,43 @@ showControls windowSize =
 
 showMobileControls : Html Msg
 showMobileControls =
-    div [ style "font-family" "monospace", style "display" "flex" ]
+    div [ style "padding-top" "3rem", style "font-family" "monospace", style "display" "grid", style "grid-template-columns" "120px 60px 120px" ]
         [ showDirectionalButtons
-        , showRotationButton
+        , div [] [ text "" ]
+        , showActionButtons
         ]
 
 
 showDirectionalButtons : Html Msg
 showDirectionalButtons =
-    div [ style "display" "flex", style "align-items" "flex-start" ]
-        [ button [ onClick MoveLeft ] [ text "<-" ]
-        , button [ onClick MoveRight ] [ text "->" ]
-        , button [ onClick RotateClockwise ] [ text "^" ]
-        , button [ onClick HardDrop ] [ text "v" ]
+    div
+        [ style "display" "grid"
+        , style "grid-template-columns" "repeat(3, 40px [col-start])"
+        , style "grid-template-rows" "repeat(3, 40px [col-start])"
+        ]
+        [ div [] [ text "" ]
+        , button (onClick RotateClockwise :: buttonColorAttrs) [ text "^" ]
+        , div [] [ text "" ]
+        , button (onClick MoveLeft :: buttonColorAttrs) [ text "<" ]
+        , div [] [ text "" ]
+        , button (onClick MoveRight :: buttonColorAttrs) [ text ">" ]
+        , div [] [ text "" ]
+        , button (onClick SoftDrop :: buttonColorAttrs) [ text "v" ]
+        , div [] [ text "" ]
         ]
 
 
-showRotationButton : Html Msg
-showRotationButton =
-    div [ style "display" "flex", style "align-items" "flex-end" ]
-        [ button [ onClick RotateClockwise ] [ text "rotate" ]
-        , button [ onClick HardDrop ] [ text "hard drop" ]
+showActionButtons : Html Msg
+showActionButtons =
+    div [ style "display" "flex", style "flex-direction" "column", style "justify-content" "space-evenly" ]
+        [ button ([ onClick RotateClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "rotate" ]
+        , button ([ onClick HardDrop, style "height" "40px" ] ++ buttonColorAttrs) [ text "hard drop" ]
         ]
+
+
+buttonColorAttrs : List (Html.Attribute Msg)
+buttonColorAttrs =
+    [ style "border" "0", style "border-radius" "5px", style "background-color" "#AED581", style "color" "white" ]
 
 
 showKeyboardControls : Html Msg
@@ -950,12 +965,12 @@ subscriptions _ =
 
 
 {-
-   TODO Add buttons for mobile players
    TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation
    TODO 180 degree rotation
    TODO Show next piece
    TODO Allow piece swapping/holding
+   TODO Clean up code and pretty up mobile UI
    TODO Fix piece randomizing to be more like Tetris Guideline
    TODO Either kick tables or T-spins
    TODO Either kick tables or T-spins

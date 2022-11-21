@@ -7419,6 +7419,13 @@ var $author$project$Main$showKeyboardControls = function () {
 			]));
 }();
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Main$buttonColorAttrs = _List_fromArray(
+	[
+		A2($elm$html$Html$Attributes$style, 'border', '0'),
+		A2($elm$html$Html$Attributes$style, 'border-radius', '5px'),
+		A2($elm$html$Html$Attributes$style, 'background-color', '#AED581'),
+		A2($elm$html$Html$Attributes$style, 'color', 'white')
+	]);
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -7436,95 +7443,150 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Main$showDirectionalButtons = A2(
+var $author$project$Main$showActionButtons = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
 			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-			A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start')
+			A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+			A2($elm$html$Html$Attributes$style, 'justify-content', 'space-evenly')
 		]),
 	_List_fromArray(
 		[
 			A2(
 			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$MoveLeft)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('<-')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$MoveRight)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('->')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('^')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$HardDrop)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('v')
-				]))
-		]));
-var $author$project$Main$showRotationButton = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-			A2($elm$html$Html$Attributes$style, 'align-items', 'flex-end')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise)
-				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise),
+						A2($elm$html$Html$Attributes$style, 'height', '40px')
+					]),
+				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('rotate')
 				])),
 			A2(
 			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$HardDrop)
-				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$HardDrop),
+						A2($elm$html$Html$Attributes$style, 'height', '40px')
+					]),
+				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('hard drop')
+				]))
+		]));
+var $author$project$Main$showDirectionalButtons = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+			A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(3, 40px [col-start])'),
+			A2($elm$html$Html$Attributes$style, 'grid-template-rows', 'repeat(3, 40px [col-start])')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				])),
+			A2(
+			$elm$html$Html$button,
+			A2(
+				$elm$core$List$cons,
+				$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('^')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				])),
+			A2(
+			$elm$html$Html$button,
+			A2(
+				$elm$core$List$cons,
+				$elm$html$Html$Events$onClick($author$project$Main$MoveLeft),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				])),
+			A2(
+			$elm$html$Html$button,
+			A2(
+				$elm$core$List$cons,
+				$elm$html$Html$Events$onClick($author$project$Main$MoveRight),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('>')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				])),
+			A2(
+			$elm$html$Html$button,
+			A2(
+				$elm$core$List$cons,
+				$elm$html$Html$Events$onClick($author$project$Main$SoftDrop),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('v')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
 				]))
 		]));
 var $author$project$Main$showMobileControls = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
+			A2($elm$html$Html$Attributes$style, 'padding-top', '3rem'),
 			A2($elm$html$Html$Attributes$style, 'font-family', 'monospace'),
-			A2($elm$html$Html$Attributes$style, 'display', 'flex')
+			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+			A2($elm$html$Html$Attributes$style, 'grid-template-columns', '120px 60px 120px')
 		]),
 	_List_fromArray(
-		[$author$project$Main$showDirectionalButtons, $author$project$Main$showRotationButton]));
+		[
+			$author$project$Main$showDirectionalButtons,
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				])),
+			$author$project$Main$showActionButtons
+		]));
 var $author$project$Main$showControls = function (windowSize) {
 	return _Utils_eq(windowSize, $author$project$Main$Mobile) ? $author$project$Main$showMobileControls : $author$project$Main$showKeyboardControls;
 };
