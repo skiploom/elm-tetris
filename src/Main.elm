@@ -783,7 +783,7 @@ view : Model -> Html Msg
 view model =
     div [ style "display" "flex", style "flex-direction" "column", style "align-items" "center" ]
         [ showGame model
-        , showControls
+        , showControls model.windowSize
         ]
 
 
@@ -856,11 +856,46 @@ spaceToColor space =
             "#212121"
 
 
-showControls : Html Msg
-showControls =
+showControls : WindowSize -> Html Msg
+showControls windowSize =
+    if windowSize == Mobile then
+        showMobileControls
+
+    else
+        showKeyboardControls
+
+
+showMobileControls : Html Msg
+showMobileControls =
+    div [ style "font-family" "monospace", style "display" "flex" ]
+        [ showDirectionalButtons
+        , showRotationButton
+        ]
+
+
+showDirectionalButtons : Html Msg
+showDirectionalButtons =
+    div [ style "display" "flex", style "align-items" "flex-start" ]
+        [ button [ onClick MoveLeft ] [ text "<-" ]
+        , button [ onClick MoveRight ] [ text "->" ]
+        , button [ onClick RotateClockwise ] [ text "^" ]
+        , button [ onClick HardDrop ] [ text "v" ]
+        ]
+
+
+showRotationButton : Html Msg
+showRotationButton =
+    div [ style "display" "flex", style "align-items" "flex-end" ]
+        [ button [ onClick RotateClockwise ] [ text "rotate" ]
+        , button [ onClick HardDrop ] [ text "hard drop" ]
+        ]
+
+
+showKeyboardControls : Html Msg
+showKeyboardControls =
     let
         ( keys, descriptions ) =
-            List.unzip controls
+            List.unzip keyControls
     in
     div [ style "font-family" "monospace", style "display" "flex" ]
         [ showKeys keys
@@ -868,8 +903,8 @@ showControls =
         ]
 
 
-controls : List ( String, String )
-controls =
+keyControls : List ( String, String )
+keyControls =
     [ ( "left", "move left" )
     , ( "right", "move right" )
     , ( "up", "rotate clockwise" )
@@ -915,7 +950,6 @@ subscriptions _ =
 
 
 {-
-   TODO Represent playfield and pieces with fixed squares instead of ASCII chars (which look different on different displays)
    TODO Add buttons for mobile players
    TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation

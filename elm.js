@@ -7318,7 +7318,7 @@ var $author$project$Main$update = F2(
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Main$controls = _List_fromArray(
+var $author$project$Main$keyControls = _List_fromArray(
 	[
 		_Utils_Tuple2('left', 'move left'),
 		_Utils_Tuple2('right', 'move right'),
@@ -7401,8 +7401,8 @@ var $elm$core$List$unzip = function (pairs) {
 		_Utils_Tuple2(_List_Nil, _List_Nil),
 		pairs);
 };
-var $author$project$Main$showControls = function () {
-	var _v0 = $elm$core$List$unzip($author$project$Main$controls);
+var $author$project$Main$showKeyboardControls = function () {
+	var _v0 = $elm$core$List$unzip($author$project$Main$keyControls);
 	var keys = _v0.a;
 	var descriptions = _v0.b;
 	return A2(
@@ -7418,6 +7418,116 @@ var $author$project$Main$showControls = function () {
 				$author$project$Main$showDescriptions(descriptions)
 			]));
 }();
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$showDirectionalButtons = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+			A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$MoveLeft)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<-')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$MoveRight)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('->')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('^')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$HardDrop)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('v')
+				]))
+		]));
+var $author$project$Main$showRotationButton = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+			A2($elm$html$Html$Attributes$style, 'align-items', 'flex-end')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('rotate')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$HardDrop)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('hard drop')
+				]))
+		]));
+var $author$project$Main$showMobileControls = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'font-family', 'monospace'),
+			A2($elm$html$Html$Attributes$style, 'display', 'flex')
+		]),
+	_List_fromArray(
+		[$author$project$Main$showDirectionalButtons, $author$project$Main$showRotationButton]));
+var $author$project$Main$showControls = function (windowSize) {
+	return _Utils_eq(windowSize, $author$project$Main$Mobile) ? $author$project$Main$showMobileControls : $author$project$Main$showKeyboardControls;
+};
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -7571,7 +7681,7 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				$author$project$Main$showGame(model),
-				$author$project$Main$showControls
+				$author$project$Main$showControls(model.windowSize)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
