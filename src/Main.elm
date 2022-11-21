@@ -867,7 +867,7 @@ showControls windowSize =
 
 showMobileControls : Html Msg
 showMobileControls =
-    div [ style "padding-top" "3rem", style "font-family" "monospace", style "display" "grid", style "grid-template-columns" "120px 60px 120px" ]
+    div [ style "padding-top" "10px", style "font-family" "monospace", style "display" "grid", style "grid-template-columns" "180px auto 120px" ]
         [ showDirectionalButtons
         , div [] [ text "" ]
         , showActionButtons
@@ -878,8 +878,8 @@ showDirectionalButtons : Html Msg
 showDirectionalButtons =
     div
         [ style "display" "grid"
-        , style "grid-template-columns" "repeat(3, 40px [col-start])"
-        , style "grid-template-rows" "repeat(3, 40px [col-start])"
+        , style "grid-template-columns" "repeat(3, 50px [col-start])"
+        , style "grid-template-rows" "repeat(3, 50px [col-start])"
         ]
         [ div [] [ text "" ]
         , button (onClick RotateClockwise :: buttonColorAttrs) [ text "^" ]
