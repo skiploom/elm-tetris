@@ -780,27 +780,43 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 
 view : Model -> Html Msg
-view { playfield, activePiece } =
+view model =
     div [ style "display" "flex", style "flex-direction" "column", style "align-items" "center" ]
-        [ showPlayfield playfield
+        [ showGame model
         , showControls
         ]
 
 
-showPlayfield : Playfield -> Html Msg
-showPlayfield playfield =
-    div [] (Array.toList (Array.map showLine playfield))
+showGame : Model -> Html Msg
+showGame model =
+    if model.windowSize == Mobile then
+        showPlayfield showBigSpace model.playfield
+
+    else
+        showPlayfield showSpace model.playfield
 
 
-showLine : Array Space -> Html Msg
-showLine line =
-    div [] (Array.toList (Array.map showSpace line))
+showPlayfield : (Space -> Html Msg) -> Playfield -> Html Msg
+showPlayfield showSpaceFn playfield =
+    div [] (Array.toList (Array.map (showLine showSpaceFn) playfield))
+
+
+showLine : (Space -> Html Msg) -> Array Space -> Html Msg
+showLine showSpaceFn line =
+    div [] (Array.toList (Array.map showSpaceFn line))
 
 
 showSpace : Space -> Html Msg
 showSpace space =
     Svg.svg [ width "22", height "22", viewBox "0 0 22 22" ]
         [ Svg.rect [ x "1", y "1", width "20", height "20", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
+        ]
+
+
+showBigSpace : Space -> Html Msg
+showBigSpace space =
+    Svg.svg [ width "42", height "42", viewBox "0 0 42 42" ]
+        [ Svg.rect [ x "1", y "1", width "40", height "40", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
         ]
 
 

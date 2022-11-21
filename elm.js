@@ -7418,31 +7418,6 @@ var $author$project$Main$showControls = function () {
 				$author$project$Main$showDescriptions(descriptions)
 			]));
 }();
-var $elm$core$Elm$JsArray$map = _JsArray_map;
-var $elm$core$Array$map = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = function (node) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return $elm$core$Array$SubTree(
-					A2($elm$core$Elm$JsArray$map, helper, subTree));
-			} else {
-				var values = node.a;
-				return $elm$core$Array$Leaf(
-					A2($elm$core$Elm$JsArray$map, func, values));
-			}
-		};
-		return A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A2($elm$core$Elm$JsArray$map, helper, tree),
-			A2($elm$core$Elm$JsArray$map, func, tail));
-	});
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -7483,6 +7458,77 @@ var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Main$showBigSpace = function (space) {
+	return A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$width('42'),
+				$elm$svg$Svg$Attributes$height('42'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 42 42')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x('1'),
+						$elm$svg$Svg$Attributes$y('1'),
+						$elm$svg$Svg$Attributes$width('40'),
+						$elm$svg$Svg$Attributes$height('40'),
+						$elm$svg$Svg$Attributes$fill(
+						$author$project$Main$spaceToColor(space)),
+						$elm$svg$Svg$Attributes$stroke('#757575'),
+						$elm$svg$Svg$Attributes$strokeWidth('1')
+					]),
+				_List_Nil)
+			]));
+};
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $author$project$Main$showLine = F2(
+	function (showSpaceFn, line) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			$elm$core$Array$toList(
+				A2($elm$core$Array$map, showSpaceFn, line)));
+	});
+var $author$project$Main$showPlayfield = F2(
+	function (showSpaceFn, playfield) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			$elm$core$Array$toList(
+				A2(
+					$elm$core$Array$map,
+					$author$project$Main$showLine(showSpaceFn),
+					playfield)));
+	});
 var $author$project$Main$showSpace = function (space) {
 	return A2(
 		$elm$svg$Svg$svg,
@@ -7510,23 +7556,10 @@ var $author$project$Main$showSpace = function (space) {
 				_List_Nil)
 			]));
 };
-var $author$project$Main$showLine = function (line) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		$elm$core$Array$toList(
-			A2($elm$core$Array$map, $author$project$Main$showSpace, line)));
+var $author$project$Main$showGame = function (model) {
+	return _Utils_eq(model.windowSize, $author$project$Main$Mobile) ? A2($author$project$Main$showPlayfield, $author$project$Main$showBigSpace, model.playfield) : A2($author$project$Main$showPlayfield, $author$project$Main$showSpace, model.playfield);
 };
-var $author$project$Main$showPlayfield = function (playfield) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		$elm$core$Array$toList(
-			A2($elm$core$Array$map, $author$project$Main$showLine, playfield)));
-};
-var $author$project$Main$view = function (_v0) {
-	var playfield = _v0.playfield;
-	var activePiece = _v0.activePiece;
+var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -7537,7 +7570,7 @@ var $author$project$Main$view = function (_v0) {
 			]),
 		_List_fromArray(
 			[
-				$author$project$Main$showPlayfield(playfield),
+				$author$project$Main$showGame(model),
 				$author$project$Main$showControls
 			]));
 };
