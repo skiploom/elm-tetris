@@ -9,6 +9,8 @@ import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
 import Random
+import Svg
+import Svg.Attributes exposing (fill, height, rx, ry, stroke, strokeWidth, viewBox, width, x, y)
 import Time
 
 
@@ -720,13 +722,7 @@ view { playfield, activePiece } =
 
 showPlayfield : Playfield -> Html Msg
 showPlayfield playfield =
-    div
-        [ style "font-family" "monospace"
-        , style "font-size" "2.5rem"
-        , style "padding" "1.5rem"
-        , style "line-height" "1.5rem"
-        ]
-        (Array.toList (Array.map showLine playfield))
+    div [] (Array.toList (Array.map showLine playfield))
 
 
 showLine : Array Space -> Html Msg
@@ -736,16 +732,9 @@ showLine line =
 
 showSpace : Space -> Html Msg
 showSpace space =
-    span [ style "color" (spaceToColor space) ] [ text (showBlock space) ]
-
-
-showBlock : Space -> String
-showBlock space =
-    if space == emptySpace then
-        "□"
-
-    else
-        "▣"
+    Svg.svg [ width "22", height "22", viewBox "0 0 22 22" ]
+        [ Svg.rect [ x "1", y "1", width "20", height "20", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
+        ]
 
 
 spaceToColor : Space -> String
@@ -781,7 +770,7 @@ spaceToColor space =
 
         Empty ->
             -- Gray
-            "#757575"
+            "#212121"
 
 
 showControls : Html Msg

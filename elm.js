@@ -7378,9 +7378,10 @@ var $elm$core$Array$map = F2(
 			A2($elm$core$Elm$JsArray$map, helper, tree),
 			A2($elm$core$Elm$JsArray$map, func, tail));
 	});
-var $author$project$Main$showBlock = function (space) {
-	return _Utils_eq(space, $author$project$Main$emptySpace) ? '□' : '▣';
-};
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $author$project$Main$spaceToColor = function (space) {
 	if (space.$ === 'Filled') {
 		switch (space.a.$) {
@@ -7407,24 +7408,41 @@ var $author$project$Main$spaceToColor = function (space) {
 				return '#E65100';
 		}
 	} else {
-		return '#757575';
+		return '#212121';
 	}
 };
-var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $author$project$Main$showSpace = function (space) {
 	return A2(
-		$elm$html$Html$span,
+		$elm$svg$Svg$svg,
 		_List_fromArray(
 			[
-				A2(
-				$elm$html$Html$Attributes$style,
-				'color',
-				$author$project$Main$spaceToColor(space))
+				$elm$svg$Svg$Attributes$width('22'),
+				$elm$svg$Svg$Attributes$height('22'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 22 22')
 			]),
 		_List_fromArray(
 			[
-				$elm$html$Html$text(
-				$author$project$Main$showBlock(space))
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x('1'),
+						$elm$svg$Svg$Attributes$y('1'),
+						$elm$svg$Svg$Attributes$width('20'),
+						$elm$svg$Svg$Attributes$height('20'),
+						$elm$svg$Svg$Attributes$fill(
+						$author$project$Main$spaceToColor(space)),
+						$elm$svg$Svg$Attributes$stroke('#757575'),
+						$elm$svg$Svg$Attributes$strokeWidth('1')
+					]),
+				_List_Nil)
 			]));
 };
 var $author$project$Main$showLine = function (line) {
@@ -7437,13 +7455,7 @@ var $author$project$Main$showLine = function (line) {
 var $author$project$Main$showPlayfield = function (playfield) {
 	return A2(
 		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'font-family', 'monospace'),
-				A2($elm$html$Html$Attributes$style, 'font-size', '2.5rem'),
-				A2($elm$html$Html$Attributes$style, 'padding', '1.5rem'),
-				A2($elm$html$Html$Attributes$style, 'line-height', '1.5rem')
-			]),
+		_List_Nil,
 		$elm$core$Array$toList(
 			A2($elm$core$Array$map, $author$project$Main$showLine, playfield)));
 };
