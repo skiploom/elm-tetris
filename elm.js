@@ -5388,6 +5388,36 @@ var $author$project$Main$addPieceToPlayfield = F2(
 			piece,
 			playfield);
 	});
+var $author$project$Main$Mobile = {$: 'Mobile'};
+var $author$project$Main$ExtraExtraLarge = {$: 'ExtraExtraLarge'};
+var $author$project$Main$ExtraLarge = {$: 'ExtraLarge'};
+var $author$project$Main$Large = {$: 'Large'};
+var $author$project$Main$Medium = {$: 'Medium'};
+var $author$project$Main$Small = {$: 'Small'};
+var $author$project$Main$classifyWindowSize = function (window) {
+	return (window.width >= 1536) ? $author$project$Main$ExtraExtraLarge : ((window.width >= 1280) ? $author$project$Main$ExtraLarge : ((window.width >= 1024) ? $author$project$Main$Large : ((window.width >= 768) ? $author$project$Main$Medium : ((window.width >= 640) ? $author$project$Main$Small : $author$project$Main$Mobile))));
+};
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Main$Window = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Main$windowDecoder = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Main$Window,
+	A2($elm$json$Json$Decode$field, 'windowWidth', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'windowHeight', $elm$json$Json$Decode$int));
+var $author$project$Main$decodeWindowFlags = function (flags) {
+	var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$windowDecoder, flags);
+	if (_v0.$ === 'Ok') {
+		var window = _v0.a;
+		return $author$project$Main$classifyWindowSize(window);
+	} else {
+		return $author$project$Main$Mobile;
+	}
+};
 var $author$project$Main$downLimit = 19;
 var $author$project$Main$Empty = {$: 'Empty'};
 var $author$project$Main$emptySpace = $author$project$Main$Empty;
@@ -5477,11 +5507,12 @@ var $author$project$Main$buildPiece = function (shape) {
 var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Main$init = function (_v0) {
+var $author$project$Main$init = function (flags) {
 	return _Utils_Tuple2(
 		{
 			activePiece: $author$project$Main$initPieceTemp,
-			playfield: A2($author$project$Main$addPieceToPlayfield, $author$project$Main$initPieceTemp, $author$project$Main$emptyPlayfield)
+			playfield: A2($author$project$Main$addPieceToPlayfield, $author$project$Main$initPieceTemp, $author$project$Main$emptyPlayfield),
+			windowSize: $author$project$Main$decodeWindowFlags(flags)
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -5904,7 +5935,6 @@ var $elm$time$Time$every = F2(
 		return $elm$time$Time$subscription(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
-var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Main$HardDrop = {$: 'HardDrop'};
 var $author$project$Main$MoveLeft = {$: 'MoveLeft'};
 var $author$project$Main$MoveRight = {$: 'MoveRight'};
@@ -6134,12 +6164,37 @@ var $elm$browser$Browser$Events$on = F3(
 			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
 var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
+var $elm$browser$Browser$Events$Window = {$: 'Window'};
+var $elm$browser$Browser$Events$onResize = function (func) {
+	return A3(
+		$elm$browser$Browser$Events$on,
+		$elm$browser$Browser$Events$Window,
+		'resize',
+		A2(
+			$elm$json$Json$Decode$field,
+			'target',
+			A3(
+				$elm$json$Json$Decode$map2,
+				func,
+				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
+				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
+};
+var $author$project$Main$GotResizedWindow = function (a) {
+	return {$: 'GotResizedWindow', a: a};
+};
+var $author$project$Main$windowResizeListener = F2(
+	function (width, height) {
+		return $author$project$Main$GotResizedWindow(
+			$author$project$Main$classifyWindowSize(
+				{height: height, width: width}));
+	});
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
 				A2($elm$time$Time$every, 1000, $author$project$Main$Tick),
-				$elm$browser$Browser$Events$onKeyDown($author$project$Main$keyDecoder)
+				$elm$browser$Browser$Events$onKeyDown($author$project$Main$keyDecoder),
+				$elm$browser$Browser$Events$onResize($author$project$Main$windowResizeListener)
 			]));
 };
 var $author$project$Main$Down = {$: 'Down'};
@@ -6824,10 +6879,12 @@ var $author$project$Main$randomPieceHelper = A2(
 var $author$project$Main$newPiece = A2($elm$random$Random$generate, $author$project$Main$NewPiece, $author$project$Main$randomPieceHelper);
 var $author$project$Main$maybeLockPiece = function (model) {
 	return $author$project$Main$isToppedOut(model) ? _Utils_Tuple2(
-		{
-			activePiece: $author$project$Main$initPieceTemp,
-			playfield: A2($author$project$Main$addPieceToPlayfield, $author$project$Main$initPieceTemp, $author$project$Main$emptyPlayfield)
-		},
+		_Utils_update(
+			model,
+			{
+				activePiece: $author$project$Main$initPieceTemp,
+				playfield: A2($author$project$Main$addPieceToPlayfield, $author$project$Main$initPieceTemp, $author$project$Main$emptyPlayfield)
+			}),
 		$elm$core$Platform$Cmd$none) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(model, $author$project$Main$newPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
@@ -7248,10 +7305,18 @@ var $author$project$Main$update = F2(
 				var time = msg.a;
 				return $author$project$Main$maybeLockPiece(
 					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Down));
+			case 'GotResizedWindow':
+				var size = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{windowSize: size}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $author$project$Main$controls = _List_fromArray(
 	[
@@ -7478,5 +7543,4 @@ var $author$project$Main$view = function (_v0) {
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
-_Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
+_Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));

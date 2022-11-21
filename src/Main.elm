@@ -29,6 +29,7 @@ main =
 type alias Model =
     { activePiece : Piece
     , playfield : Playfield
+    , windowSize : WindowSize
     }
 
 
@@ -76,10 +77,26 @@ type Space
     | Empty
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+type alias Window =
+    { width : Int
+    , height : Int
+    }
+
+
+type WindowSize
+    = Mobile
+    | Small
+    | Medium
+    | Large
+    | ExtraLarge
+    | ExtraExtraLarge
+
+
+init : Json.Decode.Value -> ( Model, Cmd Msg )
+init flags =
     ( { activePiece = initPieceTemp
       , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
+      , windowSize = decodeWindowFlags flags
       }
     , Cmd.none
     )
@@ -97,6 +114,7 @@ type Msg
     | RotateClockwise
     | NewPiece Piece
     | Tick Time.Posix
+    | GotResizedWindow WindowSize
     | NoOp
 
 
@@ -123,6 +141,9 @@ update msg model =
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
+
+        GotResizedWindow size ->
+            ( { model | windowSize = size }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -522,8 +543,9 @@ maybeLockPiece : Model -> ( Model, Cmd Msg )
 maybeLockPiece model =
     if isToppedOut model then
         -- Start the game over.
-        ( { activePiece = initPieceTemp
-          , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
+        ( { model
+            | activePiece = initPieceTemp
+            , playfield = addPieceToPlayfield initPieceTemp emptyPlayfield
           }
         , Cmd.none
         )
@@ -596,6 +618,51 @@ keyToAction string =
 
         _ ->
             NoOp
+
+
+windowResizeListener : Int -> Int -> Msg
+windowResizeListener width height =
+    GotResizedWindow (classifyWindowSize { width = width, height = height })
+
+
+decodeWindowFlags : Json.Decode.Value -> WindowSize
+decodeWindowFlags flags =
+    case Json.Decode.decodeValue windowDecoder flags of
+        Ok window ->
+            classifyWindowSize window
+
+        Err _ ->
+            Mobile
+
+
+windowDecoder : Json.Decode.Decoder Window
+windowDecoder =
+    Json.Decode.map2 Window
+        (Json.Decode.field "windowWidth" Json.Decode.int)
+        (Json.Decode.field "windowHeight" Json.Decode.int)
+
+
+{-| Breakpoints taken from [Tailwind](https://tailwindcss.com/docs/responsive-design#overview).
+-}
+classifyWindowSize : Window -> WindowSize
+classifyWindowSize window =
+    if window.width >= 1536 then
+        ExtraExtraLarge
+
+    else if window.width >= 1280 then
+        ExtraLarge
+
+    else if window.width >= 1024 then
+        Large
+
+    else if window.width >= 768 then
+        Medium
+
+    else if window.width >= 640 then
+        Small
+
+    else
+        Mobile
 
 
 randomPieceHelper : Random.Generator Piece
@@ -826,6 +893,7 @@ subscriptions _ =
     Sub.batch
         [ Time.every 1000 Tick
         , Browser.Events.onKeyDown keyDecoder
+        , Browser.Events.onResize windowResizeListener
         ]
 
 

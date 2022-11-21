@@ -10,7 +10,10 @@
 <body style="background-color: #212121">
   <div id="theapp"></div><script type="text/javascript">
 var app = Elm.Main.init({
-    node: document.getElementById('theapp')
+    node: document.getElementById('theapp'),
+    flags: { windowWidth: window.innerWidth,
+             windowHeight: window.innerHeight
+           }
   });
   </script>
 </body>
