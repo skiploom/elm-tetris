@@ -842,6 +842,8 @@ subscriptions _ =
 
 
 {-
+   TODO Represent playfield and pieces with fixed squares instead of ASCII chars (which look different on different displays)
+   TODO Add buttons for mobile players
    TODO Allow first piece to be any piece, not just O
    TODO Counterclockwise rotation
    TODO 180 degree rotation
