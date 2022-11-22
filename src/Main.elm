@@ -281,19 +281,17 @@ rotate direction model =
 
 rotateHelper : RotationDirection -> Piece -> Piece
 rotateHelper direction piece =
-    case direction of
-        Clockwise ->
+    let
+        (Piece _ _ currentRotationState) =
             piece
-                |> setRotationState direction
-                |> rotatePosition direction
 
-        CounterClockwise ->
-            -- TODO This seems kind of code smell-y.
-            -- It doesn't seem obvious that changing the order of these functions can impact whether
-            -- we're rotating clockwise or counterclockwise.
-            piece
-                |> rotatePosition direction
-                |> setRotationState direction
+        rotatedPiece =
+            setRotationState direction piece
+
+        (Piece _ _ newRotationState) =
+            rotatedPiece
+    in
+    rotatePosition currentRotationState newRotationState rotatedPiece
 
 
 setRotationState : RotationDirection -> Piece -> Piece
@@ -329,18 +327,38 @@ cycleRotationState direction rotationState =
             Rotated180
 
 
-rotatePosition : RotationDirection -> Piece -> Piece
-rotatePosition direction piece =
+rotatePosition : RotationState -> RotationState -> Piece -> Piece
+rotatePosition currentState desiredState piece =
     let
-        maybeReverse =
-            case direction of
-                Clockwise ->
-                    identity
+        (Piece shape _ _) =
+            piece
 
-                CounterClockwise ->
-                    mapRotationDelta (Tuple.mapBoth ((*) -1) ((*) -1))
+        rotationDelta =
+            getPositionDiff (initialPositions shape currentState) (initialPositions shape desiredState)
     in
-    applyRotationDelta (maybeReverse (getRotationDelta piece)) piece
+    applyRotationDelta rotationDelta piece
+
+
+getPositionDiff : Position -> Position -> RotationDelta
+getPositionDiff pos1 pos2 =
+    let
+        ( x1, y1 ) =
+            pos2.point1
+
+        ( x2, y2 ) =
+            pos2.point2
+
+        ( x3, y3 ) =
+            pos2.point3
+
+        ( x4, y4 ) =
+            pos2.point4
+    in
+    { d1 = Tuple.mapBoth ((-) x1) ((-) y1) pos1.point1
+    , d2 = Tuple.mapBoth ((-) x2) ((-) y2) pos1.point2
+    , d3 = Tuple.mapBoth ((-) x3) ((-) y3) pos1.point3
+    , d4 = Tuple.mapBoth ((-) x4) ((-) y4) pos1.point4
+    }
 
 
 type alias RotationDelta =
@@ -349,88 +367,6 @@ type alias RotationDelta =
     , d3 : ( Int, Int )
     , d4 : ( Int, Int )
     }
-
-
-{-| Currently, this describes the position differences between each clockwise rotation.
-Counterclockwise rotations are kind of handled upstream, by multiplying these tuples by negative 1.
--}
-getRotationDelta : Piece -> RotationDelta
-getRotationDelta (Piece shape _ rotationState) =
-    case ( shape, rotationState ) of
-        ( I, Rotated90 ) ->
-            buildRotationDelta ( 2, -1 ) ( 1, 0 ) ( 0, 1 ) ( -1, 2 )
-
-        ( I, Rotated180 ) ->
-            buildRotationDelta ( -2, 2 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
-
-        ( I, Rotated270 ) ->
-            buildRotationDelta ( 1, -2 ) ( 0, -1 ) ( -1, 0 ) ( -2, 1 )
-
-        ( I, Rotated0 ) ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 2, -2 )
-
-        ( O, _ ) ->
-            buildRotationDelta ( 0, 0 ) ( 0, 0 ) ( 0, 0 ) ( 0, 0 )
-
-        ( T, Rotated90 ) ->
-            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( -1, 1 )
-
-        ( T, Rotated180 ) ->
-            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -1, -1 )
-
-        ( T, Rotated270 ) ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 1, -1 )
-
-        ( T, Rotated0 ) ->
-            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 1, 1 )
-
-        ( S, Rotated90 ) ->
-            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 0, 2 )
-
-        ( S, Rotated180 ) ->
-            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, 1 ) ( -2, 0 )
-
-        ( S, Rotated270 ) ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( -1, -1 ) ( 0, -2 )
-
-        ( S, Rotated0 ) ->
-            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, -1 ) ( 2, 0 )
-
-        ( Z, Rotated90 ) ->
-            buildRotationDelta ( 2, 0 ) ( 1, 1 ) ( 0, 0 ) ( -1, 1 )
-
-        ( Z, Rotated180 ) ->
-            buildRotationDelta ( 0, 2 ) ( -1, 1 ) ( 0, 0 ) ( -1, -1 )
-
-        ( Z, Rotated270 ) ->
-            buildRotationDelta ( -2, 0 ) ( -1, -1 ) ( 0, 0 ) ( 1, -1 )
-
-        ( Z, Rotated0 ) ->
-            buildRotationDelta ( 0, -2 ) ( 1, -1 ) ( 0, 0 ) ( 1, 1 )
-
-        ( J, Rotated90 ) ->
-            buildRotationDelta ( 2, 0 ) ( 1, -1 ) ( 0, 0 ) ( -1, 1 )
-
-        ( J, Rotated180 ) ->
-            buildRotationDelta ( 0, 2 ) ( 1, 1 ) ( 0, 0 ) ( -1, -1 )
-
-        ( J, Rotated270 ) ->
-            buildRotationDelta ( -2, 0 ) ( -1, 1 ) ( 0, 0 ) ( 1, -1 )
-
-        ( J, Rotated0 ) ->
-            buildRotationDelta ( 0, -2 ) ( -1, -1 ) ( 0, 0 ) ( 1, 1 )
-
-        ( L, Rotated90 ) ->
-            buildRotationDelta ( 1, -1 ) ( 0, 0 ) ( -1, 1 ) ( 0, 2 )
-
-        ( L, Rotated180 ) ->
-            buildRotationDelta ( 1, 1 ) ( 0, 0 ) ( -1, -1 ) ( -2, 0 )
-
-        ( L, Rotated270 ) ->
-            buildRotationDelta ( -1, 1 ) ( 0, 0 ) ( 1, -1 ) ( 0, -2 )
-
-        ( L, Rotated0 ) ->
-            buildRotationDelta ( -1, -1 ) ( 0, 0 ) ( 1, 1 ) ( 2, 0 )
 
 
 buildRotationDelta : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> RotationDelta
@@ -740,27 +676,90 @@ initialRotationState =
 
 initialPosition : Shape -> Position
 initialPosition shape =
-    case shape of
-        I ->
+    initialPositions shape initialRotationState
+
+
+{-| Contains "starting positions" of all piece shapes, at all of their rotation states.
+The "starting position" is located around the top-middle of the playfield,
+and happens to be where a piece is first spawned (at RotationState = Rotation0).
+-}
+initialPositions : Shape -> RotationState -> Position
+initialPositions shape rotationState =
+    case ( shape, rotationState ) of
+        ( I, Rotated0 ) ->
             buildPosition ( 3, 0 ) ( 4, 0 ) ( 5, 0 ) ( 6, 0 )
 
-        O ->
+        ( I, Rotated90 ) ->
+            buildPosition ( 5, -1 ) ( 5, 0 ) ( 5, 1 ) ( 5, 2 )
+
+        ( I, Rotated180 ) ->
+            buildPosition ( 3, 1 ) ( 4, 1 ) ( 5, 1 ) ( 6, 1 )
+
+        ( I, Rotated270 ) ->
+            buildPosition ( 4, -1 ) ( 4, 0 ) ( 4, 1 ) ( 4, 2 )
+
+        ( O, _ ) ->
             buildPosition ( 3, 0 ) ( 4, 0 ) ( 4, 1 ) ( 3, 1 )
 
-        T ->
+        ( T, Rotated0 ) ->
             buildPosition ( 3, 2 ) ( 4, 2 ) ( 4, 1 ) ( 5, 2 )
 
-        S ->
+        ( T, Rotated90 ) ->
+            buildPosition ( 4, 1 ) ( 4, 2 ) ( 5, 2 ) ( 4, 3 )
+
+        ( T, Rotated180 ) ->
+            buildPosition ( 5, 2 ) ( 4, 2 ) ( 4, 3 ) ( 3, 2 )
+
+        ( T, Rotated270 ) ->
+            buildPosition ( 4, 3 ) ( 4, 2 ) ( 3, 2 ) ( 4, 1 )
+
+        ( S, Rotated0 ) ->
             buildPosition ( 3, 1 ) ( 4, 1 ) ( 4, 0 ) ( 5, 0 )
 
-        Z ->
+        ( S, Rotated90 ) ->
+            buildPosition ( 4, 0 ) ( 4, 1 ) ( 5, 1 ) ( 5, 2 )
+
+        ( S, Rotated180 ) ->
+            buildPosition ( 5, 1 ) ( 4, 1 ) ( 4, 2 ) ( 3, 2 )
+
+        ( S, Rotated270 ) ->
+            buildPosition ( 4, 2 ) ( 4, 1 ) ( 3, 1 ) ( 3, 0 )
+
+        ( Z, Rotated0 ) ->
             buildPosition ( 3, 0 ) ( 4, 0 ) ( 4, 1 ) ( 5, 1 )
 
-        J ->
+        ( Z, Rotated90 ) ->
+            buildPosition ( 5, 0 ) ( 5, 1 ) ( 4, 1 ) ( 4, 2 )
+
+        ( Z, Rotated180 ) ->
+            buildPosition ( 5, 2 ) ( 4, 2 ) ( 4, 1 ) ( 3, 1 )
+
+        ( Z, Rotated270 ) ->
+            buildPosition ( 3, 2 ) ( 3, 1 ) ( 4, 1 ) ( 4, 0 )
+
+        ( J, Rotated0 ) ->
             buildPosition ( 3, 0 ) ( 3, 1 ) ( 4, 1 ) ( 5, 1 )
 
-        L ->
+        ( J, Rotated90 ) ->
+            buildPosition ( 5, 0 ) ( 4, 0 ) ( 4, 1 ) ( 4, 2 )
+
+        ( J, Rotated180 ) ->
+            buildPosition ( 5, 2 ) ( 5, 1 ) ( 4, 1 ) ( 3, 1 )
+
+        ( J, Rotated270 ) ->
+            buildPosition ( 3, 2 ) ( 4, 2 ) ( 4, 1 ) ( 4, 0 )
+
+        ( L, Rotated0 ) ->
             buildPosition ( 3, 1 ) ( 4, 1 ) ( 5, 1 ) ( 5, 0 )
+
+        ( L, Rotated90 ) ->
+            buildPosition ( 4, 0 ) ( 4, 1 ) ( 4, 2 ) ( 5, 2 )
+
+        ( L, Rotated180 ) ->
+            buildPosition ( 5, 1 ) ( 4, 1 ) ( 3, 1 ) ( 3, 2 )
+
+        ( L, Rotated270 ) ->
+            buildPosition ( 4, 2 ) ( 4, 1 ) ( 4, 0 ) ( 3, 0 )
 
 
 buildPosition : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> ( Int, Int ) -> Position

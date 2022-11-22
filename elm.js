@@ -5297,61 +5297,262 @@ var $author$project$Main$buildPosition = F4(
 	function (p1, p2, p3, p4) {
 		return {point1: p1, point2: p2, point3: p3, point4: p4};
 	});
-var $author$project$Main$initialPosition = function (shape) {
-	switch (shape.$) {
-		case 'I':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 0),
-				_Utils_Tuple2(4, 0),
-				_Utils_Tuple2(5, 0),
-				_Utils_Tuple2(6, 0));
-		case 'O':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 0),
-				_Utils_Tuple2(4, 0),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(3, 1));
-		case 'T':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 2),
-				_Utils_Tuple2(4, 2),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(5, 2));
-		case 'S':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 1),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(4, 0),
-				_Utils_Tuple2(5, 0));
-		case 'Z':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 0),
-				_Utils_Tuple2(4, 0),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(5, 1));
-		case 'J':
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 0),
-				_Utils_Tuple2(3, 1),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(5, 1));
-		default:
-			return A4(
-				$author$project$Main$buildPosition,
-				_Utils_Tuple2(3, 1),
-				_Utils_Tuple2(4, 1),
-				_Utils_Tuple2(5, 1),
-				_Utils_Tuple2(5, 0));
-	}
+var $elm$core$Basics$negate = function (n) {
+	return -n;
 };
+var $author$project$Main$initialPositions = F2(
+	function (shape, rotationState) {
+		var _v0 = _Utils_Tuple2(shape, rotationState);
+		switch (_v0.a.$) {
+			case 'I':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 0),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(5, 0),
+							_Utils_Tuple2(6, 0));
+					case 'Rotated90':
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, -1),
+							_Utils_Tuple2(5, 0),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(5, 2));
+					case 'Rotated180':
+						var _v5 = _v0.a;
+						var _v6 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(6, 1));
+					default:
+						var _v7 = _v0.a;
+						var _v8 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, -1),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2));
+				}
+			case 'O':
+				var _v9 = _v0.a;
+				return A4(
+					$author$project$Main$buildPosition,
+					_Utils_Tuple2(3, 0),
+					_Utils_Tuple2(4, 0),
+					_Utils_Tuple2(4, 1),
+					_Utils_Tuple2(3, 1));
+			case 'T':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v10 = _v0.a;
+						var _v11 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 2),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 2));
+					case 'Rotated90':
+						var _v12 = _v0.a;
+						var _v13 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(5, 2),
+							_Utils_Tuple2(4, 3));
+					case 'Rotated180':
+						var _v14 = _v0.a;
+						var _v15 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 2),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 3),
+							_Utils_Tuple2(3, 2));
+					default:
+						var _v16 = _v0.a;
+						var _v17 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 3),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(3, 2),
+							_Utils_Tuple2(4, 1));
+				}
+			case 'S':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v18 = _v0.a;
+						var _v19 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(5, 0));
+					case 'Rotated90':
+						var _v20 = _v0.a;
+						var _v21 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(5, 2));
+					case 'Rotated180':
+						var _v22 = _v0.a;
+						var _v23 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(3, 2));
+					default:
+						var _v24 = _v0.a;
+						var _v25 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(3, 0));
+				}
+			case 'Z':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v26 = _v0.a;
+						var _v27 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 0),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 1));
+					case 'Rotated90':
+						var _v28 = _v0.a;
+						var _v29 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 0),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2));
+					case 'Rotated180':
+						var _v30 = _v0.a;
+						var _v31 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 2),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(3, 1));
+					default:
+						var _v32 = _v0.a;
+						var _v33 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 2),
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 0));
+				}
+			case 'J':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v34 = _v0.a;
+						var _v35 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 0),
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 1));
+					case 'Rotated90':
+						var _v36 = _v0.a;
+						var _v37 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 0),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2));
+					case 'Rotated180':
+						var _v38 = _v0.a;
+						var _v39 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 2),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(3, 1));
+					default:
+						var _v40 = _v0.a;
+						var _v41 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 2),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 0));
+				}
+			default:
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v42 = _v0.a;
+						var _v43 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(5, 0));
+					case 'Rotated90':
+						var _v44 = _v0.a;
+						var _v45 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(5, 2));
+					case 'Rotated180':
+						var _v46 = _v0.a;
+						var _v47 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(3, 2));
+					default:
+						var _v48 = _v0.a;
+						var _v49 = _v0.b;
+						return A4(
+							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(3, 0));
+				}
+		}
+	});
 var $author$project$Main$Rotated0 = {$: 'Rotated0'};
 var $author$project$Main$initialRotationState = $author$project$Main$Rotated0;
+var $author$project$Main$initialPosition = function (shape) {
+	return A2($author$project$Main$initialPositions, shape, $author$project$Main$initialRotationState);
+};
 var $author$project$Main$buildPiece = function (shape) {
 	return A3(
 		$author$project$Main$Piece,
@@ -5478,9 +5679,6 @@ var $author$project$Main$T = {$: 'T'};
 var $author$project$Main$Z = {$: 'Z'};
 var $elm$random$Random$addOne = function (value) {
 	return _Utils_Tuple2(1, value);
-};
-var $elm$core$Basics$negate = function (n) {
-	return -n;
 };
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
@@ -6961,288 +7159,52 @@ var $author$project$Main$applyRotationDelta = F2(
 				}),
 			piece);
 	});
-var $author$project$Main$buildRotationDelta = F4(
-	function (d1, d2, d3, d4) {
-		return {d1: d1, d2: d2, d3: d3, d4: d4};
+var $author$project$Main$getPositionDiff = F2(
+	function (pos1, pos2) {
+		var _v0 = pos2.point4;
+		var x4 = _v0.a;
+		var y4 = _v0.b;
+		var _v1 = pos2.point3;
+		var x3 = _v1.a;
+		var y3 = _v1.b;
+		var _v2 = pos2.point2;
+		var x2 = _v2.a;
+		var y2 = _v2.b;
+		var _v3 = pos2.point1;
+		var x1 = _v3.a;
+		var y1 = _v3.b;
+		return {
+			d1: A3(
+				$elm$core$Tuple$mapBoth,
+				$elm$core$Basics$sub(x1),
+				$elm$core$Basics$sub(y1),
+				pos1.point1),
+			d2: A3(
+				$elm$core$Tuple$mapBoth,
+				$elm$core$Basics$sub(x2),
+				$elm$core$Basics$sub(y2),
+				pos1.point2),
+			d3: A3(
+				$elm$core$Tuple$mapBoth,
+				$elm$core$Basics$sub(x3),
+				$elm$core$Basics$sub(y3),
+				pos1.point3),
+			d4: A3(
+				$elm$core$Tuple$mapBoth,
+				$elm$core$Basics$sub(x4),
+				$elm$core$Basics$sub(y4),
+				pos1.point4)
+		};
 	});
-var $author$project$Main$getRotationDelta = function (_v0) {
-	var shape = _v0.a;
-	var rotationState = _v0.c;
-	var _v1 = _Utils_Tuple2(shape, rotationState);
-	switch (_v1.a.$) {
-		case 'I':
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v2 = _v1.a;
-					var _v3 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(2, -1),
-						_Utils_Tuple2(1, 0),
-						_Utils_Tuple2(0, 1),
-						_Utils_Tuple2(-1, 2));
-				case 'Rotated180':
-					var _v4 = _v1.a;
-					var _v5 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-2, 2),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1));
-				case 'Rotated270':
-					var _v6 = _v1.a;
-					var _v7 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, -2),
-						_Utils_Tuple2(0, -1),
-						_Utils_Tuple2(-1, 0),
-						_Utils_Tuple2(-2, 1));
-				default:
-					var _v8 = _v1.a;
-					var _v9 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(2, -2));
-			}
-		case 'O':
-			var _v10 = _v1.a;
-			return A4(
-				$author$project$Main$buildRotationDelta,
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(0, 0));
-		case 'T':
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v11 = _v1.a;
-					var _v12 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(-1, 1));
-				case 'Rotated180':
-					var _v13 = _v1.a;
-					var _v14 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(-1, -1));
-				case 'Rotated270':
-					var _v15 = _v1.a;
-					var _v16 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(1, -1));
-				default:
-					var _v17 = _v1.a;
-					var _v18 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(1, 1));
-			}
-		case 'S':
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v19 = _v1.a;
-					var _v20 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 2));
-				case 'Rotated180':
-					var _v21 = _v1.a;
-					var _v22 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(-2, 0));
-				case 'Rotated270':
-					var _v23 = _v1.a;
-					var _v24 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, -2));
-				default:
-					var _v25 = _v1.a;
-					var _v26 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(2, 0));
-			}
-		case 'Z':
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v27 = _v1.a;
-					var _v28 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(2, 0),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, 1));
-				case 'Rotated180':
-					var _v29 = _v1.a;
-					var _v30 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(0, 2),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, -1));
-				case 'Rotated270':
-					var _v31 = _v1.a;
-					var _v32 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-2, 0),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1));
-				default:
-					var _v33 = _v1.a;
-					var _v34 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(0, -2),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, 1));
-			}
-		case 'J':
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v35 = _v1.a;
-					var _v36 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(2, 0),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, 1));
-				case 'Rotated180':
-					var _v37 = _v1.a;
-					var _v38 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(0, 2),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, -1));
-				case 'Rotated270':
-					var _v39 = _v1.a;
-					var _v40 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-2, 0),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1));
-				default:
-					var _v41 = _v1.a;
-					var _v42 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(0, -2),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, 1));
-			}
-		default:
-			switch (_v1.b.$) {
-				case 'Rotated90':
-					var _v43 = _v1.a;
-					var _v44 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 2));
-				case 'Rotated180':
-					var _v45 = _v1.a;
-					var _v46 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(-2, 0));
-				case 'Rotated270':
-					var _v47 = _v1.a;
-					var _v48 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(0, -2));
-				default:
-					var _v49 = _v1.a;
-					var _v50 = _v1.b;
-					return A4(
-						$author$project$Main$buildRotationDelta,
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, 0),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(2, 0));
-			}
-	}
-};
-var $author$project$Main$mapRotationDelta = F2(
-	function (fn, rd) {
-		return _Utils_update(
-			rd,
-			{
-				d1: fn(rd.d1),
-				d2: fn(rd.d2),
-				d3: fn(rd.d3),
-				d4: fn(rd.d4)
-			});
-	});
-var $author$project$Main$rotatePosition = F2(
-	function (direction, piece) {
-		var maybeReverse = function () {
-			if (direction.$ === 'Clockwise') {
-				return $elm$core$Basics$identity;
-			} else {
-				return $author$project$Main$mapRotationDelta(
-					A2(
-						$elm$core$Tuple$mapBoth,
-						$elm$core$Basics$mul(-1),
-						$elm$core$Basics$mul(-1)));
-			}
-		}();
-		return A2(
-			$author$project$Main$applyRotationDelta,
-			maybeReverse(
-				$author$project$Main$getRotationDelta(piece)),
-			piece);
+var $author$project$Main$rotatePosition = F3(
+	function (currentState, desiredState, piece) {
+		var _v0 = piece;
+		var shape = _v0.a;
+		var rotationDelta = A2(
+			$author$project$Main$getPositionDiff,
+			A2($author$project$Main$initialPositions, shape, currentState),
+			A2($author$project$Main$initialPositions, shape, desiredState));
+		return A2($author$project$Main$applyRotationDelta, rotationDelta, piece);
 	});
 var $author$project$Main$Rotated180 = {$: 'Rotated180'};
 var $author$project$Main$Rotated270 = {$: 'Rotated270'};
@@ -7303,17 +7265,12 @@ var $author$project$Main$setRotationState = F2(
 	});
 var $author$project$Main$rotateHelper = F2(
 	function (direction, piece) {
-		if (direction.$ === 'Clockwise') {
-			return A2(
-				$author$project$Main$rotatePosition,
-				direction,
-				A2($author$project$Main$setRotationState, direction, piece));
-		} else {
-			return A2(
-				$author$project$Main$setRotationState,
-				direction,
-				A2($author$project$Main$rotatePosition, direction, piece));
-		}
+		var rotatedPiece = A2($author$project$Main$setRotationState, direction, piece);
+		var _v0 = rotatedPiece;
+		var newRotationState = _v0.c;
+		var _v1 = piece;
+		var currentRotationState = _v1.c;
+		return A3($author$project$Main$rotatePosition, currentRotationState, newRotationState, rotatedPiece);
 	});
 var $author$project$Main$canPieceRotateThatWay = F2(
 	function (direction, model) {
