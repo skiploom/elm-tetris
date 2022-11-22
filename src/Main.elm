@@ -717,16 +717,16 @@ initialPositions shape rotationState =
             buildPosition ( 3, 0 ) ( 4, 0 ) ( 4, 1 ) ( 3, 1 )
 
         ( T, Rotated0 ) ->
-            buildPosition ( 3, 2 ) ( 4, 2 ) ( 4, 1 ) ( 5, 2 )
+            buildPosition ( 3, 1 ) ( 4, 1 ) ( 4, 0 ) ( 5, 1 )
 
         ( T, Rotated90 ) ->
-            buildPosition ( 4, 1 ) ( 4, 2 ) ( 5, 2 ) ( 4, 3 )
+            buildPosition ( 4, 0 ) ( 4, 1 ) ( 5, 1 ) ( 4, 2 )
 
         ( T, Rotated180 ) ->
-            buildPosition ( 5, 2 ) ( 4, 2 ) ( 4, 3 ) ( 3, 2 )
+            buildPosition ( 5, 1 ) ( 4, 1 ) ( 4, 2 ) ( 3, 1 )
 
         ( T, Rotated270 ) ->
-            buildPosition ( 4, 3 ) ( 4, 2 ) ( 3, 2 ) ( 4, 1 )
+            buildPosition ( 4, 2 ) ( 4, 1 ) ( 3, 1 ) ( 4, 0 )
 
         ( S, Rotated0 ) ->
             buildPosition ( 3, 1 ) ( 4, 1 ) ( 4, 0 ) ( 5, 0 )
