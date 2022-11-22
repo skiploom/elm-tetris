@@ -7369,6 +7369,15 @@ var $author$project$Main$update = F2(
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $author$project$Main$keyControls = _List_fromArray(
 	[
@@ -7392,19 +7401,13 @@ var $author$project$Main$showDescription = function (description) {
 				$elm$html$Html$text(description)
 			]));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Main$showDescriptions = function (descriptions) {
 	return A2(
 		$elm$html$Html$ul,
 		_List_fromArray(
 			[
-				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-				A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-				A2($elm$html$Html$Attributes$style, 'align-items', 'flex-end'),
-				A2($elm$html$Html$Attributes$style, 'list-style-type', 'none'),
-				A2($elm$html$Html$Attributes$style, 'color', '#E0E0E0')
+				$elm$html$Html$Attributes$class('descriptions')
 			]),
 		A2($elm$core$List$map, $author$project$Main$showDescription, descriptions));
 };
@@ -7429,12 +7432,7 @@ var $author$project$Main$showKeys = function (keys) {
 		$elm$html$Html$ul,
 		_List_fromArray(
 			[
-				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-				A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-				A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start'),
-				A2($elm$html$Html$Attributes$style, 'padding', '0'),
-				A2($elm$html$Html$Attributes$style, 'list-style-type', 'none'),
-				A2($elm$html$Html$Attributes$style, 'color', '#AED581')
+				$elm$html$Html$Attributes$class('keys')
 			]),
 		A2($elm$core$List$map, $author$project$Main$showKey, keys));
 };
@@ -7463,8 +7461,7 @@ var $author$project$Main$showKeyboardControls = function () {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				A2($elm$html$Html$Attributes$style, 'font-family', 'monospace'),
-				A2($elm$html$Html$Attributes$style, 'display', 'flex')
+				$elm$html$Html$Attributes$class('keyboard-controls')
 			]),
 		_List_fromArray(
 			[
@@ -7472,14 +7469,14 @@ var $author$project$Main$showKeyboardControls = function () {
 				$author$project$Main$showDescriptions(descriptions)
 			]));
 }();
+var $author$project$Main$emptyCell = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			$elm$html$Html$text('')
+		]));
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $author$project$Main$buttonColorAttrs = _List_fromArray(
-	[
-		A2($elm$html$Html$Attributes$style, 'border', '0'),
-		A2($elm$html$Html$Attributes$style, 'border-radius', '5px'),
-		A2($elm$html$Html$Attributes$style, 'background-color', '#AED581'),
-		A2($elm$html$Html$Attributes$style, 'color', 'white')
-	]);
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -7501,63 +7498,49 @@ var $author$project$Main$showActionButtons = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
-			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-			A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-			A2($elm$html$Html$Attributes$style, 'justify-content', 'space-evenly')
+			$elm$html$Html$Attributes$class('action-buttons')
 		]),
 	_List_fromArray(
 		[
 			A2(
 			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Main$Rotate($author$project$Main$Clockwise)),
-						A2($elm$html$Html$Attributes$style, 'height', '40px')
-					]),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Rotate($author$project$Main$Clockwise))
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Rotate Clockwise')
 				])),
 			A2(
 			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Main$Rotate($author$project$Main$CounterClockwise)),
-						A2($elm$html$Html$Attributes$style, 'height', '40px')
-					]),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Rotate($author$project$Main$CounterClockwise))
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Rotate CCW')
 				])),
 			A2(
 			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Main$Rotate($author$project$Main$Flip180)),
-						A2($elm$html$Html$Attributes$style, 'height', '40px')
-					]),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Rotate($author$project$Main$Flip180))
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Flip 180°')
 				])),
 			A2(
 			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick($author$project$Main$HardDrop),
-						A2($elm$html$Html$Attributes$style, 'height', '40px')
-					]),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$HardDrop)
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Hard Drop')
@@ -7567,112 +7550,99 @@ var $author$project$Main$showDirectionalButtons = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
-			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-			A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(3, 50px [col-start])'),
-			A2($elm$html$Html$Attributes$style, 'grid-template-rows', 'repeat(3, 50px [col-start])')
+			$elm$html$Html$Attributes$class('directional-buttons')
 		]),
 	_List_fromArray(
 		[
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])),
+			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
-			A2(
-				$elm$core$List$cons,
-				$elm$html$Html$Events$onClick(
-					$author$project$Main$Rotate($author$project$Main$Clockwise)),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Rotate($author$project$Main$Clockwise))
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('^')
 				])),
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])),
+			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
-			A2(
-				$elm$core$List$cons,
-				$elm$html$Html$Events$onClick($author$project$Main$MoveLeft),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$MoveLeft)
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('<')
 				])),
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])),
+			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
-			A2(
-				$elm$core$List$cons,
-				$elm$html$Html$Events$onClick($author$project$Main$MoveRight),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$MoveRight)
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('>')
 				])),
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])),
+			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
-			A2(
-				$elm$core$List$cons,
-				$elm$html$Html$Events$onClick($author$project$Main$SoftDrop),
-				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$SoftDrop)
+				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('v')
 				])),
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				]))
+			$author$project$Main$emptyCell
 		]));
 var $author$project$Main$showMobileControls = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
-			A2($elm$html$Html$Attributes$style, 'padding-top', '10px'),
-			A2($elm$html$Html$Attributes$style, 'font-family', 'monospace'),
-			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-			A2($elm$html$Html$Attributes$style, 'grid-template-columns', '180px auto 120px')
+			$elm$html$Html$Attributes$class('mobile-controls')
 		]),
 	_List_fromArray(
-		[
-			$author$project$Main$showDirectionalButtons,
-			A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])),
-			$author$project$Main$showActionButtons
-		]));
+		[$author$project$Main$showDirectionalButtons, $author$project$Main$emptyCell, $author$project$Main$showActionButtons]));
 var $author$project$Main$showControls = function (windowSize) {
 	return _Utils_eq(windowSize, $author$project$Main$Mobile) ? $author$project$Main$showMobileControls : $author$project$Main$showKeyboardControls;
+};
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $author$project$Main$getStyleConfig = function (size) {
+	if (size.$ === 'Mobile') {
+		return {blockHeight: 28, lineClass: 'line'};
+	} else {
+		return {blockHeight: 20, lineClass: 'line line--sm'};
+	}
 };
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -7714,115 +7684,96 @@ var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Main$showBigSpace = function (space) {
-	return A2(
-		$elm$svg$Svg$svg,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$width('30'),
-				$elm$svg$Svg$Attributes$height('30'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 30 30')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$rect,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x('1'),
-						$elm$svg$Svg$Attributes$y('1'),
-						$elm$svg$Svg$Attributes$width('28'),
-						$elm$svg$Svg$Attributes$height('28'),
-						$elm$svg$Svg$Attributes$fill(
-						$author$project$Main$spaceToColor(space)),
-						$elm$svg$Svg$Attributes$stroke('#757575'),
-						$elm$svg$Svg$Attributes$strokeWidth('1')
-					]),
-				_List_Nil)
-			]));
-};
-var $elm$core$Elm$JsArray$map = _JsArray_map;
-var $elm$core$Array$map = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = function (node) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return $elm$core$Array$SubTree(
-					A2($elm$core$Elm$JsArray$map, helper, subTree));
-			} else {
-				var values = node.a;
-				return $elm$core$Array$Leaf(
-					A2($elm$core$Elm$JsArray$map, func, values));
-			}
-		};
-		return A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A2($elm$core$Elm$JsArray$map, helper, tree),
-			A2($elm$core$Elm$JsArray$map, func, tail));
+var $author$project$Main$showSpace = F2(
+	function (size, space) {
+		var blockHeight = function ($) {
+			return $.blockHeight;
+		}(
+			$author$project$Main$getStyleConfig(size));
+		var lineHeight = blockHeight + 2;
+		var _v0 = _Utils_Tuple2(
+			$elm$core$String$fromInt(blockHeight),
+			$elm$core$String$fromInt(lineHeight));
+		var b = _v0.a;
+		var l = _v0.b;
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$width(l),
+					$elm$svg$Svg$Attributes$height(l),
+					$elm$svg$Svg$Attributes$viewBox(
+					A2(
+						$elm$core$String$join,
+						' ',
+						_List_fromArray(
+							['0', '0', l, l])))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x('1'),
+							$elm$svg$Svg$Attributes$y('1'),
+							$elm$svg$Svg$Attributes$width(b),
+							$elm$svg$Svg$Attributes$height(b),
+							$elm$svg$Svg$Attributes$fill(
+							$author$project$Main$spaceToColor(space)),
+							$elm$svg$Svg$Attributes$stroke('#757575'),
+							$elm$svg$Svg$Attributes$strokeWidth('1')
+						]),
+					_List_Nil)
+				]));
 	});
 var $author$project$Main$showLine = F2(
-	function (showSpaceFn, line) {
+	function (size, line) {
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					function ($) {
+						return $.lineClass;
+					}(
+						$author$project$Main$getStyleConfig(size)))
+				]),
 			$elm$core$Array$toList(
-				A2($elm$core$Array$map, showSpaceFn, line)));
+				A2(
+					$elm$core$Array$map,
+					$author$project$Main$showSpace(size),
+					line)));
 	});
-var $author$project$Main$showPlayfield = F2(
-	function (showSpaceFn, playfield) {
+var $author$project$Main$showLines = F2(
+	function (size, playfield) {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			$elm$core$Array$toList(
 				A2(
 					$elm$core$Array$map,
-					$author$project$Main$showLine(showSpaceFn),
+					$author$project$Main$showLine(size),
 					playfield)));
 	});
-var $author$project$Main$showSpace = function (space) {
-	return A2(
-		$elm$svg$Svg$svg,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$width('22'),
-				$elm$svg$Svg$Attributes$height('22'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 22 22')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$rect,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x('1'),
-						$elm$svg$Svg$Attributes$y('1'),
-						$elm$svg$Svg$Attributes$width('20'),
-						$elm$svg$Svg$Attributes$height('20'),
-						$elm$svg$Svg$Attributes$fill(
-						$author$project$Main$spaceToColor(space)),
-						$elm$svg$Svg$Attributes$stroke('#757575'),
-						$elm$svg$Svg$Attributes$strokeWidth('1')
-					]),
-				_List_Nil)
-			]));
+var $author$project$Main$showPlayfield = function (model) {
+	return A2($author$project$Main$showLines, model.windowSize, model.playfield);
 };
 var $author$project$Main$showGame = function (model) {
-	return _Utils_eq(model.windowSize, $author$project$Main$Mobile) ? A2($author$project$Main$showPlayfield, $author$project$Main$showBigSpace, model.playfield) : A2($author$project$Main$showPlayfield, $author$project$Main$showSpace, model.playfield);
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$Main$showPlayfield(model)
+			]));
 };
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-				A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-				A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+				$elm$html$Html$Attributes$class('main')
 			]),
 		_List_fromArray(
 			[

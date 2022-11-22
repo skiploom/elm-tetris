@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Browser
 import Browser.Events
 import Html exposing (Html, br, button, div, li, span, strong, text, ul)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
@@ -843,7 +843,7 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 view : Model -> Html Msg
 view model =
-    div [ style "display" "flex", style "flex-direction" "column", style "align-items" "center" ]
+    div [ class "main" ]
         [ showGame model
         , showControls model.windowSize
         ]
@@ -851,35 +851,58 @@ view model =
 
 showGame : Model -> Html Msg
 showGame model =
-    if model.windowSize == Mobile then
-        showPlayfield showBigSpace model.playfield
-
-    else
-        showPlayfield showSpace model.playfield
-
-
-showPlayfield : (Space -> Html Msg) -> Playfield -> Html Msg
-showPlayfield showSpaceFn playfield =
-    div [] (Array.toList (Array.map (showLine showSpaceFn) playfield))
-
-
-showLine : (Space -> Html Msg) -> Array Space -> Html Msg
-showLine showSpaceFn line =
-    div [] (Array.toList (Array.map showSpaceFn line))
-
-
-showSpace : Space -> Html Msg
-showSpace space =
-    Svg.svg [ width "22", height "22", viewBox "0 0 22 22" ]
-        [ Svg.rect [ x "1", y "1", width "20", height "20", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
+    div []
+        [ showPlayfield model
         ]
 
 
-showBigSpace : Space -> Html Msg
-showBigSpace space =
-    Svg.svg [ width "30", height "30", viewBox "0 0 30 30" ]
-        [ Svg.rect [ x "1", y "1", width "28", height "28", fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
+showPlayfield : Model -> Html Msg
+showPlayfield model =
+    showLines model.windowSize model.playfield
+
+
+showLines : WindowSize -> Playfield -> Html Msg
+showLines size playfield =
+    div [] (Array.toList (Array.map (showLine size) playfield))
+
+
+showLine : WindowSize -> Array Space -> Html Msg
+showLine size line =
+    div [ class (.lineClass (getStyleConfig size)) ]
+        (Array.toList (Array.map (showSpace size) line))
+
+
+showSpace : WindowSize -> Space -> Html Msg
+showSpace size space =
+    let
+        blockHeight =
+            .blockHeight (getStyleConfig size)
+
+        lineHeight =
+            blockHeight + 2
+
+        ( b, l ) =
+            ( String.fromInt blockHeight, String.fromInt lineHeight )
+    in
+    Svg.svg [ width l, height l, viewBox (String.join " " [ "0", "0", l, l ]) ]
+        [ Svg.rect [ x "1", y "1", width b, height b, fill (spaceToColor space), stroke "#757575", strokeWidth "1" ] []
         ]
+
+
+type alias StyleConfig =
+    { lineClass : String
+    , blockHeight : Int
+    }
+
+
+getStyleConfig : WindowSize -> StyleConfig
+getStyleConfig size =
+    case size of
+        Mobile ->
+            { lineClass = "line", blockHeight = 28 }
+
+        _ ->
+            { lineClass = "line line--sm", blockHeight = 20 }
 
 
 spaceToColor : Space -> String
@@ -929,45 +952,36 @@ showControls windowSize =
 
 showMobileControls : Html Msg
 showMobileControls =
-    div [ style "padding-top" "10px", style "font-family" "monospace", style "display" "grid", style "grid-template-columns" "180px auto 120px" ]
+    div [ class "mobile-controls" ]
         [ showDirectionalButtons
-        , div [] [ text "" ]
+        , emptyCell
         , showActionButtons
         ]
 
 
 showDirectionalButtons : Html Msg
 showDirectionalButtons =
-    div
-        [ style "display" "grid"
-        , style "grid-template-columns" "repeat(3, 50px [col-start])"
-        , style "grid-template-rows" "repeat(3, 50px [col-start])"
-        ]
-        [ div [] [ text "" ]
-        , button (onClick (Rotate Clockwise) :: buttonColorAttrs) [ text "^" ]
-        , div [] [ text "" ]
-        , button (onClick MoveLeft :: buttonColorAttrs) [ text "<" ]
-        , div [] [ text "" ]
-        , button (onClick MoveRight :: buttonColorAttrs) [ text ">" ]
-        , div [] [ text "" ]
-        , button (onClick SoftDrop :: buttonColorAttrs) [ text "v" ]
-        , div [] [ text "" ]
+    div [ class "directional-buttons" ]
+        [ emptyCell
+        , button [ onClick (Rotate Clockwise) ] [ text "^" ]
+        , emptyCell
+        , button [ onClick MoveLeft ] [ text "<" ]
+        , emptyCell
+        , button [ onClick MoveRight ] [ text ">" ]
+        , emptyCell
+        , button [ onClick SoftDrop ] [ text "v" ]
+        , emptyCell
         ]
 
 
 showActionButtons : Html Msg
 showActionButtons =
-    div [ style "display" "flex", style "flex-direction" "column", style "justify-content" "space-evenly" ]
-        [ button ([ onClick (Rotate Clockwise), style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate Clockwise" ]
-        , button ([ onClick (Rotate CounterClockwise), style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate CCW" ]
-        , button ([ onClick (Rotate Flip180), style "height" "40px" ] ++ buttonColorAttrs) [ text "Flip 180°" ]
-        , button ([ onClick HardDrop, style "height" "40px" ] ++ buttonColorAttrs) [ text "Hard Drop" ]
+    div [ class "action-buttons" ]
+        [ button [ onClick (Rotate Clockwise) ] [ text "Rotate Clockwise" ]
+        , button [ onClick (Rotate CounterClockwise) ] [ text "Rotate CCW" ]
+        , button [ onClick (Rotate Flip180) ] [ text "Flip 180°" ]
+        , button [ onClick HardDrop ] [ text "Hard Drop" ]
         ]
-
-
-buttonColorAttrs : List (Html.Attribute Msg)
-buttonColorAttrs =
-    [ style "border" "0", style "border-radius" "5px", style "background-color" "#AED581", style "color" "white" ]
 
 
 showKeyboardControls : Html Msg
@@ -976,7 +990,7 @@ showKeyboardControls =
         ( keys, descriptions ) =
             List.unzip keyControls
     in
-    div [ style "font-family" "monospace", style "display" "flex" ]
+    div [ class "keyboard-controls" ]
         [ showKeys keys
         , showDescriptions descriptions
         ]
@@ -996,7 +1010,7 @@ keyControls =
 
 showKeys : List String -> Html Msg
 showKeys keys =
-    ul [ style "display" "flex", style "flex-direction" "column", style "align-items" "flex-start", style "padding" "0", style "list-style-type" "none", style "color" "#AED581" ]
+    ul [ class "keys" ]
         (List.map showKey keys)
 
 
@@ -1007,13 +1021,18 @@ showKey key =
 
 showDescriptions : List String -> Html Msg
 showDescriptions descriptions =
-    ul [ style "display" "flex", style "flex-direction" "column", style "align-items" "flex-end", style "list-style-type" "none", style "color" "#E0E0E0" ]
+    ul [ class "descriptions" ]
         (List.map showDescription descriptions)
 
 
 showDescription : String -> Html Msg
 showDescription description =
     li [] [ text description ]
+
+
+emptyCell : Html Msg
+emptyCell =
+    div [] [ text "" ]
 
 
 
