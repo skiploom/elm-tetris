@@ -844,26 +844,15 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
-        [ showGame model
+        [ showPlayfield model.windowSize model.playfield
         , showControls model.windowSize
         ]
 
 
-showGame : Model -> Html Msg
-showGame model =
-    div []
-        [ showPlayfield model
-        ]
-
-
-showPlayfield : Model -> Html Msg
-showPlayfield model =
-    showLines model.windowSize model.playfield
-
-
-showLines : WindowSize -> Playfield -> Html Msg
-showLines size playfield =
-    div [] (Array.toList (Array.map (showLine size) playfield))
+showPlayfield : WindowSize -> Playfield -> Html Msg
+showPlayfield size playfield =
+    div [ class "playfield" ]
+        (Array.toList (Array.map (showLine size) playfield))
 
 
 showLine : WindowSize -> Array Space -> Html Msg
@@ -952,7 +941,7 @@ showControls windowSize =
 
 showMobileControls : Html Msg
 showMobileControls =
-    div [ class "mobile-controls" ]
+    div [ class "controls controls--mobile" ]
         [ showDirectionalButtons
         , emptyCell
         , showActionButtons
@@ -990,7 +979,7 @@ showKeyboardControls =
         ( keys, descriptions ) =
             List.unzip keyControls
     in
-    div [ class "keyboard-controls" ]
+    div [ class "controls controls--keyboard" ]
         [ showKeys keys
         , showDescriptions descriptions
         ]

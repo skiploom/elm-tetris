@@ -1,0 +1,83 @@
+body {
+     background-color: #212121;
+}
+
+.main {
+     display: grid;
+     grid-template-columns: 1fr 1fr 1fr;
+     grid-template-rows: 1fr 1fr 1fr;
+     justify-items: center;
+}
+
+.playfield {
+     grid-column-start: 2;
+     grid-column-end: span 1;
+     grid-row-start: 1;
+     grid-row-end: span 2;
+}
+
+.controls {
+     grid-column-start: 1;
+     grid-column-end: span 3;
+     grid-row-start: 3;
+}
+
+.line {
+     height: 30px;
+}
+
+.line--sm {
+     height: 22px;
+}
+
+.controls--mobile {
+     padding-top: 10px;
+     font-family: monospace;
+     display: grid;
+     grid-template-columns: 180px auto 120px;
+}
+
+.controls--mobile button {
+     border: 0;
+     border-radius: 5px;
+     background-color: #AED581;
+     color: white;
+}
+
+.controls--mobile > .directional-buttons {
+     display: grid;
+     grid-template-columns: repeat(3, 50px [col-start]);
+     grid-template-rows: repeat(3, 50px [col-start]);
+}
+
+.controls--mobile > .action-buttons {
+     display: flex;
+     flex-direction: column;
+     justify-content: space-evenly;
+}
+
+.controls--mobile > .action-buttons > button {
+     height: 40px;
+}
+
+.controls--keyboard {
+     display: flex;
+     font-family: monospace;
+}
+
+.controls--keyboard > .keys {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-start;
+     padding: 0;
+     list-style-type: none;
+     color: #AED581;
+}
+
+.controls--keyboard > .descriptions {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-end;
+     list-style-type: none;
+     color: #E0E0E0;
+}

@@ -7461,7 +7461,7 @@ var $author$project$Main$showKeyboardControls = function () {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('keyboard-controls')
+				$elm$html$Html$Attributes$class('controls controls--keyboard')
 			]),
 		_List_fromArray(
 			[
@@ -7605,7 +7605,7 @@ var $author$project$Main$showMobileControls = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
-			$elm$html$Html$Attributes$class('mobile-controls')
+			$elm$html$Html$Attributes$class('controls controls--mobile')
 		]),
 	_List_fromArray(
 		[$author$project$Main$showDirectionalButtons, $author$project$Main$emptyCell, $author$project$Main$showActionButtons]));
@@ -7745,29 +7745,20 @@ var $author$project$Main$showLine = F2(
 					$author$project$Main$showSpace(size),
 					line)));
 	});
-var $author$project$Main$showLines = F2(
+var $author$project$Main$showPlayfield = F2(
 	function (size, playfield) {
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('playfield')
+				]),
 			$elm$core$Array$toList(
 				A2(
 					$elm$core$Array$map,
 					$author$project$Main$showLine(size),
 					playfield)));
 	});
-var $author$project$Main$showPlayfield = function (model) {
-	return A2($author$project$Main$showLines, model.windowSize, model.playfield);
-};
-var $author$project$Main$showGame = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$author$project$Main$showPlayfield(model)
-			]));
-};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -7777,7 +7768,7 @@ var $author$project$Main$view = function (model) {
 			]),
 		_List_fromArray(
 			[
-				$author$project$Main$showGame(model),
+				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };
