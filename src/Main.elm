@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Browser
 import Browser.Events
 import Html exposing (Html, br, button, div, li, span, strong, text, ul)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
@@ -943,7 +943,6 @@ showMobileControls : Html Msg
 showMobileControls =
     div [ class "controls controls--mobile" ]
         [ showDirectionalButtons
-        , emptyCell
         , showActionButtons
         ]
 
@@ -951,15 +950,10 @@ showMobileControls =
 showDirectionalButtons : Html Msg
 showDirectionalButtons =
     div [ class "directional-buttons" ]
-        [ emptyCell
-        , button [ onClick (Rotate Clockwise) ] [ text "^" ]
-        , emptyCell
-        , button [ onClick MoveLeft ] [ text "<" ]
-        , emptyCell
-        , button [ onClick MoveRight ] [ text ">" ]
-        , emptyCell
-        , button [ onClick SoftDrop ] [ text "v" ]
-        , emptyCell
+        [ button [ onClick (Rotate Clockwise), id "button-up" ] [ text "^" ]
+        , button [ onClick MoveRight, id "button-right" ] [ text ">" ]
+        , button [ onClick SoftDrop, id "button-down" ] [ text "v" ]
+        , button [ onClick MoveLeft, id "button-left" ] [ text "<" ]
         ]
 
 
@@ -1017,11 +1011,6 @@ showDescriptions descriptions =
 showDescription : String -> Html Msg
 showDescription description =
     li [] [ text description ]
-
-
-emptyCell : Html Msg
-emptyCell =
-    div [] [ text "" ]
 
 
 

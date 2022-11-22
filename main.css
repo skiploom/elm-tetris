@@ -5,21 +5,18 @@ body {
 .main {
      display: grid;
      grid-template-columns: 1fr 1fr 1fr;
-     grid-template-rows: 1fr 1fr 1fr;
+     grid-template-rows: 1fr 1fr 1fr 1fr;
      justify-items: center;
 }
 
 .playfield {
-     grid-column-start: 2;
-     grid-column-end: span 1;
-     grid-row-start: 1;
-     grid-row-end: span 2;
+     grid-column: 2;
+     grid-row: 1 / span 3;
 }
 
 .controls {
-     grid-column-start: 1;
-     grid-column-end: span 3;
-     grid-row-start: 3;
+     grid-column: 1 / span 3;
+     grid-row: 4;
 }
 
 .line {
@@ -45,12 +42,34 @@ body {
 }
 
 .controls--mobile > .directional-buttons {
+     grid-column: 1 / span 1;
      display: grid;
      grid-template-columns: repeat(3, 50px [col-start]);
      grid-template-rows: repeat(3, 50px [col-start]);
 }
 
+.controls--mobile > .directional-buttons > #button-up {
+     grid-column: 2;
+     grid-row: 1;
+}
+
+.controls--mobile > .directional-buttons > #button-right {
+     grid-column: 3;
+     grid-row: 2;
+}
+
+.controls--mobile > .directional-buttons > #button-down {
+     grid-column: 2;
+     grid-row: 3;
+}
+
+.controls--mobile > .directional-buttons > #button-left {
+     grid-column: 1;
+     grid-row: 2;
+}
+
 .controls--mobile > .action-buttons {
+     grid-column: 3;
      display: flex;
      flex-direction: column;
      justify-content: space-evenly;

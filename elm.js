@@ -7469,13 +7469,6 @@ var $author$project$Main$showKeyboardControls = function () {
 				$author$project$Main$showDescriptions(descriptions)
 			]));
 }();
-var $author$project$Main$emptyCell = A2(
-	$elm$html$Html$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			$elm$html$Html$text('')
-		]));
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -7546,6 +7539,7 @@ var $author$project$Main$showActionButtons = A2(
 					$elm$html$Html$text('Hard Drop')
 				]))
 		]));
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $author$project$Main$showDirectionalButtons = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
@@ -7554,52 +7548,51 @@ var $author$project$Main$showDirectionalButtons = A2(
 		]),
 	_List_fromArray(
 		[
-			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
 					$elm$html$Html$Events$onClick(
-					$author$project$Main$Rotate($author$project$Main$Clockwise))
+					$author$project$Main$Rotate($author$project$Main$Clockwise)),
+					$elm$html$Html$Attributes$id('button-up')
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('^')
 				])),
-			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick($author$project$Main$MoveLeft)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('<')
-				])),
-			$author$project$Main$emptyCell,
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$MoveRight)
+					$elm$html$Html$Events$onClick($author$project$Main$MoveRight),
+					$elm$html$Html$Attributes$id('button-right')
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('>')
 				])),
-			$author$project$Main$emptyCell,
 			A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick($author$project$Main$SoftDrop)
+					$elm$html$Html$Events$onClick($author$project$Main$SoftDrop),
+					$elm$html$Html$Attributes$id('button-down')
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('v')
 				])),
-			$author$project$Main$emptyCell
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$MoveLeft),
+					$elm$html$Html$Attributes$id('button-left')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<')
+				]))
 		]));
 var $author$project$Main$showMobileControls = A2(
 	$elm$html$Html$div,
@@ -7608,7 +7601,7 @@ var $author$project$Main$showMobileControls = A2(
 			$elm$html$Html$Attributes$class('controls controls--mobile')
 		]),
 	_List_fromArray(
-		[$author$project$Main$showDirectionalButtons, $author$project$Main$emptyCell, $author$project$Main$showActionButtons]));
+		[$author$project$Main$showDirectionalButtons, $author$project$Main$showActionButtons]));
 var $author$project$Main$showControls = function (windowSize) {
 	return _Utils_eq(windowSize, $author$project$Main$Mobile) ? $author$project$Main$showMobileControls : $author$project$Main$showKeyboardControls;
 };
