@@ -5288,7 +5288,151 @@ var $elm$core$Array$repeat = F2(
 var $author$project$Main$rightLimit = 9;
 var $author$project$Main$emptyLine = A2($elm$core$Array$repeat, $author$project$Main$rightLimit + 1, $author$project$Main$emptySpace);
 var $author$project$Main$emptyPlayfield = A2($elm$core$Array$repeat, $author$project$Main$downLimit + 1, $author$project$Main$emptyLine);
+var $author$project$Main$NewGame = function (a) {
+	return {$: 'NewGame', a: a};
+};
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
+};
+var $elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$random$Random$next = function (_v0) {
+	var state0 = _v0.a;
+	var incr = _v0.b;
+	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var $elm$random$Random$initialSeed = function (x) {
+	var _v0 = $elm$random$Random$next(
+		A2($elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _v0.a;
+	var incr = _v0.b;
+	var state2 = (state1 + x) >>> 0;
+	return $elm$random$Random$next(
+		A2($elm$random$Random$Seed, state2, incr));
+};
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$random$Random$init = A2(
+	$elm$core$Task$andThen,
+	function (time) {
+		return $elm$core$Task$succeed(
+			$elm$random$Random$initialSeed(
+				$elm$time$Time$posixToMillis(time)));
+	},
+	$elm$time$Time$now);
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return $elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _v1 = A2($elm$random$Random$step, generator, seed);
+			var value = _v1.a;
+			var newSeed = _v1.b;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2($elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var $elm$random$Random$onSelfMsg = F3(
+	function (_v0, _v1, seed) {
+		return $elm$core$Task$succeed(seed);
+	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$map = F2(
+	function (func, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v1 = genA(seed0);
+				var a = _v1.a;
+				var seed1 = _v1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var $elm$random$Random$cmdMap = F2(
+	function (func, _v0) {
+		var generator = _v0.a;
+		return $elm$random$Random$Generate(
+			A2($elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
+var $elm$random$Random$command = _Platform_leaf('Random');
+var $elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return $elm$random$Random$command(
+			$elm$random$Random$Generate(
+				A2($elm$random$Random$map, tagger, generator)));
+	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
+				return _Utils_Tuple2(
+					A2(func, a, b),
+					seed2);
+			});
+	});
+var $elm$random$Random$pair = F2(
+	function (genA, genB) {
+		return A3(
+			$elm$random$Random$map2,
+			F2(
+				function (a, b) {
+					return _Utils_Tuple2(a, b);
+				}),
+			genA,
+			genB);
+	});
+var $author$project$Main$I = {$: 'I'};
+var $author$project$Main$J = {$: 'J'};
+var $author$project$Main$L = {$: 'L'};
 var $author$project$Main$O = {$: 'O'};
+var $author$project$Main$S = {$: 'S'};
+var $author$project$Main$T = {$: 'T'};
+var $author$project$Main$Z = {$: 'Z'};
 var $author$project$Main$Piece = F3(
 	function (a, b, c) {
 		return {$: 'Piece', a: a, b: b, c: c};
@@ -5560,123 +5704,6 @@ var $author$project$Main$buildPiece = function (shape) {
 		$author$project$Main$initialPosition(shape),
 		$author$project$Main$initialRotationState);
 };
-var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
-var $author$project$Main$NewPiece = function (a) {
-	return {$: 'NewPiece', a: a};
-};
-var $elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
-};
-var $elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$random$Random$next = function (_v0) {
-	var state0 = _v0.a;
-	var incr = _v0.b;
-	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$random$Random$initialSeed = function (x) {
-	var _v0 = $elm$random$Random$next(
-		A2($elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _v0.a;
-	var incr = _v0.b;
-	var state2 = (state1 + x) >>> 0;
-	return $elm$random$Random$next(
-		A2($elm$random$Random$Seed, state2, incr));
-};
-var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0.a;
-	return millis;
-};
-var $elm$random$Random$init = A2(
-	$elm$core$Task$andThen,
-	function (time) {
-		return $elm$core$Task$succeed(
-			$elm$random$Random$initialSeed(
-				$elm$time$Time$posixToMillis(time)));
-	},
-	$elm$time$Time$now);
-var $elm$random$Random$step = F2(
-	function (_v0, seed) {
-		var generator = _v0.a;
-		return generator(seed);
-	});
-var $elm$random$Random$onEffects = F3(
-	function (router, commands, seed) {
-		if (!commands.b) {
-			return $elm$core$Task$succeed(seed);
-		} else {
-			var generator = commands.a.a;
-			var rest = commands.b;
-			var _v1 = A2($elm$random$Random$step, generator, seed);
-			var value = _v1.a;
-			var newSeed = _v1.b;
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					return A3($elm$random$Random$onEffects, router, rest, newSeed);
-				},
-				A2($elm$core$Platform$sendToApp, router, value));
-		}
-	});
-var $elm$random$Random$onSelfMsg = F3(
-	function (_v0, _v1, seed) {
-		return $elm$core$Task$succeed(seed);
-	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
-var $elm$random$Random$map = F2(
-	function (func, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v1 = genA(seed0);
-				var a = _v1.a;
-				var seed1 = _v1.b;
-				return _Utils_Tuple2(
-					func(a),
-					seed1);
-			});
-	});
-var $elm$random$Random$cmdMap = F2(
-	function (func, _v0) {
-		var generator = _v0.a;
-		return $elm$random$Random$Generate(
-			A2($elm$random$Random$map, func, generator));
-	});
-_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
-var $elm$random$Random$command = _Platform_leaf('Random');
-var $elm$random$Random$generate = F2(
-	function (tagger, generator) {
-		return $elm$random$Random$command(
-			$elm$random$Random$Generate(
-				A2($elm$random$Random$map, tagger, generator)));
-	});
-var $author$project$Main$I = {$: 'I'};
-var $author$project$Main$J = {$: 'J'};
-var $author$project$Main$L = {$: 'L'};
-var $author$project$Main$S = {$: 'S'};
-var $author$project$Main$T = {$: 'T'};
-var $author$project$Main$Z = {$: 'Z'};
 var $elm$random$Random$addOne = function (value) {
 	return _Utils_Tuple2(1, value);
 };
@@ -5765,11 +5792,15 @@ var $author$project$Main$randomPieceHelper = A2(
 		$author$project$Main$buildPiece,
 		_List_fromArray(
 			[$author$project$Main$O, $author$project$Main$T, $author$project$Main$S, $author$project$Main$Z, $author$project$Main$J, $author$project$Main$L])));
-var $author$project$Main$newPiece = A2($elm$random$Random$generate, $author$project$Main$NewPiece, $author$project$Main$randomPieceHelper);
+var $author$project$Main$generateCurrentAndNextPiece = A2(
+	$elm$random$Random$generate,
+	$author$project$Main$NewGame,
+	A2($elm$random$Random$pair, $author$project$Main$randomPieceHelper, $author$project$Main$randomPieceHelper));
+var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
 var $author$project$Main$newGame = function (windowSize) {
 	return _Utils_Tuple2(
-		{activePiece: $author$project$Main$initPieceTemp, playfield: $author$project$Main$emptyPlayfield, windowSize: windowSize},
-		$author$project$Main$newPiece);
+		{activePiece: $author$project$Main$initPieceTemp, nextPiece: $author$project$Main$initPieceTemp, playfield: $author$project$Main$emptyPlayfield, windowSize: windowSize},
+		$author$project$Main$generateCurrentAndNextPiece);
 };
 var $author$project$Main$init = function (flags) {
 	return $author$project$Main$newGame(
@@ -6877,6 +6908,10 @@ var $author$project$Main$clearLines = function (playfield) {
 		playfieldSubsetWithClearedLines);
 	return refreshedPlayfield;
 };
+var $author$project$Main$GenerateNextPiece = function (a) {
+	return {$: 'GenerateNextPiece', a: a};
+};
+var $author$project$Main$generateNextPiece = A2($elm$random$Random$generate, $author$project$Main$GenerateNextPiece, $author$project$Main$randomPieceHelper);
 var $author$project$Main$mapPosition = F2(
 	function (fn, pos) {
 		return _Utils_update(
@@ -7089,7 +7124,7 @@ var $author$project$Main$isToppedOut = function (model) {
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$maybeLockPiece = function (model) {
-	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(model, $author$project$Main$newPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(model, $author$project$Main$generateNextPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
 	function (oldPiece, newPiece_, playfield) {
@@ -7320,6 +7355,22 @@ var $author$project$Main$rotate = F2(
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'NewGame':
+				var _v1 = msg.a;
+				var activePiece = _v1.a;
+				var nextPiece = _v1.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							activePiece: activePiece,
+							nextPiece: nextPiece,
+							playfield: A2(
+								$author$project$Main$addPieceToPlayfield,
+								activePiece,
+								$author$project$Main$clearLines(model.playfield))
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'MoveLeft':
 				return _Utils_Tuple2(
 					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Left),
@@ -7334,22 +7385,23 @@ var $author$project$Main$update = F2(
 			case 'HardDrop':
 				return _Utils_Tuple2(
 					$author$project$Main$hardDrop(model),
-					$author$project$Main$newPiece);
+					$author$project$Main$generateNextPiece);
 			case 'Rotate':
 				var direction = msg.a;
 				return _Utils_Tuple2(
 					A2($author$project$Main$rotate, direction, model),
 					$elm$core$Platform$Cmd$none);
-			case 'NewPiece':
-				var piece = msg.a;
+			case 'GenerateNextPiece':
+				var newNextPiece = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							activePiece: piece,
+							activePiece: model.nextPiece,
+							nextPiece: newNextPiece,
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
-								piece,
+								model.nextPiece,
 								$author$project$Main$clearLines(model.playfield))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7803,7 +7855,7 @@ var $author$project$Main$view = function (model) {
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
 				$author$project$Main$showNextPiece(
 				$author$project$Main$buildPiece(
-					$author$project$Main$getShape(model.activePiece))),
+					$author$project$Main$getShape(model.nextPiece))),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };

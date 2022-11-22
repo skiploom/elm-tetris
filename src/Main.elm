@@ -28,6 +28,7 @@ main =
 
 type alias Model =
     { activePiece : Piece
+    , nextPiece : Piece
     , playfield : Playfield
     , windowSize : WindowSize
     }
@@ -108,12 +109,13 @@ init flags =
 
 
 type Msg
-    = MoveLeft
+    = NewGame ( Piece, Piece )
+    | MoveLeft
     | MoveRight
     | SoftDrop
     | HardDrop
     | Rotate RotationDirection
-    | NewPiece Piece
+    | GenerateNextPiece Piece
     | Tick Time.Posix
     | GotResizedWindow WindowSize
     | NoOp
@@ -122,6 +124,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewGame ( activePiece, nextPiece ) ->
+            ( { model | playfield = addPieceToPlayfield activePiece (clearLines model.playfield), activePiece = activePiece, nextPiece = nextPiece }, Cmd.none )
+
         MoveLeft ->
             ( maybeRefreshPlayfield model Left, Cmd.none )
 
@@ -132,13 +137,13 @@ update msg model =
             maybeLockPiece (maybeRefreshPlayfield model Down)
 
         HardDrop ->
-            ( hardDrop model, newPiece )
+            ( hardDrop model, generateNextPiece )
 
         Rotate direction ->
             ( rotate direction model, Cmd.none )
 
-        NewPiece piece ->
-            ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
+        GenerateNextPiece newNextPiece ->
+            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece }, Cmd.none )
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -532,7 +537,7 @@ maybeLockPiece model =
         newGame model.windowSize
 
     else if isPieceStuck model then
-        ( model, newPiece )
+        ( model, generateNextPiece )
 
     else
         ( model, Cmd.none )
@@ -541,10 +546,11 @@ maybeLockPiece model =
 newGame : WindowSize -> ( Model, Cmd Msg )
 newGame windowSize =
     ( { activePiece = initPieceTemp
+      , nextPiece = initPieceTemp
       , playfield = emptyPlayfield
       , windowSize = windowSize
       }
-    , newPiece
+    , generateCurrentAndNextPiece
     )
 
 
@@ -674,9 +680,14 @@ randomPieceHelper =
     Random.uniform (buildPiece I) (List.map buildPiece [ O, T, S, Z, J, L ])
 
 
-newPiece : Cmd Msg
-newPiece =
-    Random.generate NewPiece randomPieceHelper
+generateNextPiece : Cmd Msg
+generateNextPiece =
+    Random.generate GenerateNextPiece randomPieceHelper
+
+
+generateCurrentAndNextPiece : Cmd Msg
+generateCurrentAndNextPiece =
+    Random.generate NewGame (Random.pair randomPieceHelper randomPieceHelper)
 
 
 initPieceTemp : Piece
@@ -850,7 +861,7 @@ view : Model -> Html Msg
 view model =
     div [ class "main" ]
         [ showPlayfield model.windowSize model.playfield
-        , showNextPiece (buildPiece (getShape model.activePiece))
+        , showNextPiece (buildPiece (getShape model.nextPiece))
         , showControls model.windowSize
         ]
 
@@ -1059,7 +1070,6 @@ subscriptions _ =
 
 
 {-
-   TODO Show next piece
    TODO Allow piece swapping/holding
    TODO Clean up code and pretty up mobile UI
    TODO Fix piece randomizing to be more like Tetris Guideline
