@@ -5358,37 +5358,37 @@ var $author$project$Main$initialPositions = F2(
 						var _v11 = _v0.b;
 						return A4(
 							$author$project$Main$buildPosition,
-							_Utils_Tuple2(3, 2),
-							_Utils_Tuple2(4, 2),
+							_Utils_Tuple2(3, 1),
 							_Utils_Tuple2(4, 1),
-							_Utils_Tuple2(5, 2));
+							_Utils_Tuple2(4, 0),
+							_Utils_Tuple2(5, 1));
 					case 'Rotated90':
 						var _v12 = _v0.a;
 						var _v13 = _v0.b;
 						return A4(
 							$author$project$Main$buildPosition,
+							_Utils_Tuple2(4, 0),
 							_Utils_Tuple2(4, 1),
-							_Utils_Tuple2(4, 2),
-							_Utils_Tuple2(5, 2),
-							_Utils_Tuple2(4, 3));
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 2));
 					case 'Rotated180':
 						var _v14 = _v0.a;
 						var _v15 = _v0.b;
 						return A4(
 							$author$project$Main$buildPosition,
-							_Utils_Tuple2(5, 2),
+							_Utils_Tuple2(5, 1),
+							_Utils_Tuple2(4, 1),
 							_Utils_Tuple2(4, 2),
-							_Utils_Tuple2(4, 3),
-							_Utils_Tuple2(3, 2));
+							_Utils_Tuple2(3, 1));
 					default:
 						var _v16 = _v0.a;
 						var _v17 = _v0.b;
 						return A4(
 							$author$project$Main$buildPosition,
-							_Utils_Tuple2(4, 3),
 							_Utils_Tuple2(4, 2),
-							_Utils_Tuple2(3, 2),
-							_Utils_Tuple2(4, 1));
+							_Utils_Tuple2(4, 1),
+							_Utils_Tuple2(3, 1),
+							_Utils_Tuple2(4, 0));
 				}
 			case 'S':
 				switch (_v0.b.$) {
@@ -7379,6 +7379,10 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Main$getShape = function (_v0) {
+	var shape = _v0.a;
+	return shape;
+};
 var $author$project$Main$keyControls = _List_fromArray(
 	[
 		_Utils_Tuple2('left', 'move left'),
@@ -7738,6 +7742,45 @@ var $author$project$Main$showLine = F2(
 					$author$project$Main$showSpace(size),
 					line)));
 	});
+var $author$project$Main$showLines = F2(
+	function (size, playfield) {
+		return $elm$core$Array$toList(
+			A2(
+				$elm$core$Array$map,
+				$author$project$Main$showLine(size),
+				playfield));
+	});
+var $author$project$Main$showNextPiece = function (piece) {
+	var nextPiece = A2(
+		$author$project$Main$setPosition,
+		A2(
+			$author$project$Main$goLeft,
+			3,
+			$author$project$Main$getPosition(piece)),
+		piece);
+	var miniPlayfield = A2(
+		$elm$core$Array$repeat,
+		3,
+		A2($elm$core$Array$repeat, 4, $author$project$Main$Empty));
+	var nextPiecePreview = A2($author$project$Main$addPieceToPlayfield, nextPiece, miniPlayfield);
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('next-piece')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('next'),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('preview')
+					]),
+				A2($author$project$Main$showLines, $author$project$Main$Small, nextPiecePreview))
+			]));
+};
 var $author$project$Main$showPlayfield = F2(
 	function (size, playfield) {
 		return A2(
@@ -7746,11 +7789,7 @@ var $author$project$Main$showPlayfield = F2(
 				[
 					$elm$html$Html$Attributes$class('playfield')
 				]),
-			$elm$core$Array$toList(
-				A2(
-					$elm$core$Array$map,
-					$author$project$Main$showLine(size),
-					playfield)));
+			A2($author$project$Main$showLines, size, playfield));
 	});
 var $author$project$Main$view = function (model) {
 	return A2(
@@ -7762,6 +7801,9 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
+				$author$project$Main$showNextPiece(
+				$author$project$Main$buildPiece(
+					$author$project$Main$getShape(model.activePiece))),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };

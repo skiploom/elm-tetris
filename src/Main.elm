@@ -664,6 +664,11 @@ classifyWindowSize window =
         Mobile
 
 
+getShape : Piece -> Shape
+getShape (Piece shape _ _) =
+    shape
+
+
 randomPieceHelper : Random.Generator Piece
 randomPieceHelper =
     Random.uniform (buildPiece I) (List.map buildPiece [ O, T, S, Z, J, L ])
@@ -845,14 +850,19 @@ view : Model -> Html Msg
 view model =
     div [ class "main" ]
         [ showPlayfield model.windowSize model.playfield
+        , showNextPiece (buildPiece (getShape model.activePiece))
         , showControls model.windowSize
         ]
 
 
 showPlayfield : WindowSize -> Playfield -> Html Msg
 showPlayfield size playfield =
-    div [ class "playfield" ]
-        (Array.toList (Array.map (showLine size) playfield))
+    div [ class "playfield" ] (showLines size playfield)
+
+
+showLines : WindowSize -> Playfield -> List (Html Msg)
+showLines size playfield =
+    Array.toList (Array.map (showLine size) playfield)
 
 
 showLine : WindowSize -> Array Space -> Html Msg
@@ -928,6 +938,27 @@ spaceToColor space =
         Empty ->
             -- Gray
             "#212121"
+
+
+{-| This implementation is temporary.
+Most likely, a static image of the next piece will be displayed.
+-}
+showNextPiece : Piece -> Html Msg
+showNextPiece piece =
+    let
+        miniPlayfield =
+            Array.repeat 3 (Array.repeat 4 Empty)
+
+        nextPiece =
+            setPosition (goLeft 3 (getPosition piece)) piece
+
+        nextPiecePreview =
+            addPieceToPlayfield nextPiece miniPlayfield
+    in
+    div [ class "next-piece" ]
+        [ text "next"
+        , div [ class "preview" ] (showLines Small nextPiecePreview)
+        ]
 
 
 showControls : WindowSize -> Html Msg
@@ -1032,6 +1063,7 @@ subscriptions _ =
    TODO Allow piece swapping/holding
    TODO Clean up code and pretty up mobile UI
    TODO Fix piece randomizing to be more like Tetris Guideline
+   TODO Show next 5 pieces
    TODO Either kick tables or T-spins
    TODO Either kick tables or T-spins
    TODO Fix tucks (probably somnething to do with Tick and locking logic)
