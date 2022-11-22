@@ -28,6 +28,8 @@ main =
 
 type alias Model =
     { activePiece : Piece
+    , hasAlreadySwapped : Bool
+    , heldPiece : Maybe Piece
     , nextPiece : Piece
     , playfield : Playfield
     , windowSize : WindowSize
@@ -115,6 +117,7 @@ type Msg
     | SoftDrop
     | HardDrop
     | Rotate RotationDirection
+    | Swap
     | GenerateNextPiece Piece
     | Tick Time.Posix
     | GotResizedWindow WindowSize
@@ -142,8 +145,11 @@ update msg model =
         Rotate direction ->
             ( rotate direction model, Cmd.none )
 
+        Swap ->
+            maybeSwap model
+
         GenerateNextPiece newNextPiece ->
-            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece }, Cmd.none )
+            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece, hasAlreadySwapped = False }, Cmd.none )
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -500,6 +506,37 @@ hardDropHelper model shouldContinue counter =
             counter
 
 
+maybeSwap : Model -> ( Model, Cmd Msg )
+maybeSwap model =
+    if model.hasAlreadySwapped then
+        ( model, Cmd.none )
+
+    else
+        swap model
+
+
+swap : Model -> ( Model, Cmd Msg )
+swap model =
+    case model.heldPiece of
+        Nothing ->
+            ( { model
+                | heldPiece = Just (buildPiece (getShape model.activePiece))
+                , playfield = removePieceFromPlayfield model.activePiece model.playfield
+              }
+            , generateNextPiece
+            )
+
+        Just heldPiece ->
+            ( { model
+                | heldPiece = Just (buildPiece (getShape model.activePiece))
+                , activePiece = heldPiece
+                , hasAlreadySwapped = True
+                , playfield = refreshPlayfieldHelper model.activePiece heldPiece model.playfield
+              }
+            , Cmd.none
+            )
+
+
 isToppedOut : Model -> Bool
 isToppedOut model =
     isPieceAtTop model && isPieceStuck model
@@ -546,6 +583,8 @@ maybeLockPiece model =
 newGame : WindowSize -> ( Model, Cmd Msg )
 newGame windowSize =
     ( { activePiece = initPieceTemp
+      , hasAlreadySwapped = False
+      , heldPiece = Nothing
       , nextPiece = initPieceTemp
       , playfield = emptyPlayfield
       , windowSize = windowSize
@@ -620,6 +659,12 @@ keyToAction string =
 
         "A" ->
             Rotate Flip180
+
+        "x" ->
+            Swap
+
+        "X" ->
+            Swap
 
         _ ->
             NoOp
@@ -860,9 +905,18 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
-        [ showPlayfield model.windowSize model.playfield
+        [ showHeldPiece model.heldPiece
+        , showPlayfield model.windowSize model.playfield
         , showNextPiece (buildPiece (getShape model.nextPiece))
         , showControls model.windowSize
+        ]
+
+
+showHeldPiece : Maybe Piece -> Html Msg
+showHeldPiece piece =
+    div [ class "piece-preview piece-preview--hold" ]
+        [ text "hold"
+        , showPiecePreview piece
         ]
 
 
@@ -956,20 +1010,35 @@ Most likely, a static image of the next piece will be displayed.
 -}
 showNextPiece : Piece -> Html Msg
 showNextPiece piece =
-    let
-        miniPlayfield =
-            Array.repeat 3 (Array.repeat 4 Empty)
-
-        nextPiece =
-            setPosition (goLeft 3 (getPosition piece)) piece
-
-        nextPiecePreview =
-            addPieceToPlayfield nextPiece miniPlayfield
-    in
-    div [ class "next-piece" ]
+    div [ class "piece-preview piece-preview--next" ]
         [ text "next"
-        , div [ class "preview" ] (showLines Small nextPiecePreview)
+        , showPiecePreview (Just piece)
         ]
+
+
+showPiecePreview : Maybe Piece -> Html Msg
+showPiecePreview piece =
+    div [] (showLines Small (showPiecePreviewHelper piece))
+
+
+showPiecePreviewHelper : Maybe Piece -> Playfield
+showPiecePreviewHelper piece =
+    let
+        emptyMiniPlayfield =
+            Array.repeat 3 (Array.repeat 4 Empty)
+    in
+    case piece of
+        Nothing ->
+            emptyMiniPlayfield
+
+        -- We assume the piece passed to this function has a postion
+        -- equal to the piece's starting position.
+        -- For this preview, we want to shift that position a bit
+        -- to the left for simplicity. This is temporary.
+        Just piece_ ->
+            addPieceToPlayfield
+                (setPosition (goLeft 3 (getPosition piece_)) piece_)
+                emptyMiniPlayfield
 
 
 showControls : WindowSize -> Html Msg
@@ -1005,6 +1074,7 @@ showActionButtons =
         [ button [ onClick (Rotate Clockwise) ] [ text "Rotate Clockwise" ]
         , button [ onClick (Rotate CounterClockwise) ] [ text "Rotate CCW" ]
         , button [ onClick (Rotate Flip180) ] [ text "Flip 180°" ]
+        , button [ onClick Swap ] [ text "Swap" ]
         , button [ onClick HardDrop ] [ text "Hard Drop" ]
         ]
 
@@ -1030,6 +1100,7 @@ keyControls =
     , ( "up", "rotate clockwise" )
     , ( "z", "rotate counterclockwise" )
     , ( "a", "rotate 180°" )
+    , ( "x", "swap" )
     ]
 
 
@@ -1070,7 +1141,6 @@ subscriptions _ =
 
 
 {-
-   TODO Allow piece swapping/holding
    TODO Clean up code and pretty up mobile UI
    TODO Fix piece randomizing to be more like Tetris Guideline
    TODO Show next 5 pieces

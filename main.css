@@ -8,8 +8,8 @@ body {
 
 .main {
      display: grid;
-     grid-template-columns: 100px 250px 100px;
-     grid-template-rows: 1fr 1fr 1fr 1fr;
+     grid-template-columns: 125px 250px 125px;
+     grid-template-rows: 150px 150px 150px 1fr;
 }
 
 .playfield {
@@ -21,17 +21,28 @@ body {
      border-color: #AED581;
 }
 
-.next-piece {
-     grid-column: 3;
-     grid-row: 1;
-     justify-self: left;
+.piece-preview {
      height: 100px;
      width: 100px;
      padding: 1px;
-     border-style: solid;
-     border-color: #AED581;
-     border-width: 1px;
      text-align: center;
+}
+
+.piece-preview.piece-preview--hold {
+     grid-column: 1;
+     grid-row: 1;
+     justify-self: end;
+     border-style: solid;
+     border-width: 3px;
+     border-color: #AED581;
+}
+
+.piece-preview.piece-preview--next {
+     grid-column: 3;
+     grid-row: 1;
+     border-style: solid;
+     border-width: 1px;
+     border-color: #757575;
 }
 
 .controls {

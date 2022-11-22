@@ -5799,7 +5799,7 @@ var $author$project$Main$generateCurrentAndNextPiece = A2(
 var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
 var $author$project$Main$newGame = function (windowSize) {
 	return _Utils_Tuple2(
-		{activePiece: $author$project$Main$initPieceTemp, nextPiece: $author$project$Main$initPieceTemp, playfield: $author$project$Main$emptyPlayfield, windowSize: windowSize},
+		{activePiece: $author$project$Main$initPieceTemp, hasAlreadySwapped: false, heldPiece: $elm$core$Maybe$Nothing, nextPiece: $author$project$Main$initPieceTemp, playfield: $author$project$Main$emptyPlayfield, windowSize: windowSize},
 		$author$project$Main$generateCurrentAndNextPiece);
 };
 var $author$project$Main$init = function (flags) {
@@ -6220,6 +6220,7 @@ var $author$project$Main$Rotate = function (a) {
 	return {$: 'Rotate', a: a};
 };
 var $author$project$Main$SoftDrop = {$: 'SoftDrop'};
+var $author$project$Main$Swap = {$: 'Swap'};
 var $author$project$Main$keyToAction = function (string) {
 	switch (string) {
 		case 'ArrowLeft':
@@ -6240,6 +6241,10 @@ var $author$project$Main$keyToAction = function (string) {
 			return $author$project$Main$Rotate($author$project$Main$Flip180);
 		case 'A':
 			return $author$project$Main$Rotate($author$project$Main$Flip180);
+		case 'x':
+			return $author$project$Main$Swap;
+		case 'X':
+			return $author$project$Main$Swap;
 		default:
 			return $author$project$Main$NoOp;
 	}
@@ -7145,6 +7150,42 @@ var $author$project$Main$maybeRefreshPlayfield = F2(
 	function (model, moveDirection) {
 		return A2($author$project$Main$canPieceMoveThatWay, model, moveDirection) ? A2($author$project$Main$refreshPlayfield, model, moveDirection) : model;
 	});
+var $author$project$Main$getShape = function (_v0) {
+	var shape = _v0.a;
+	return shape;
+};
+var $author$project$Main$swap = function (model) {
+	var _v0 = model.heldPiece;
+	if (_v0.$ === 'Nothing') {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					heldPiece: $elm$core$Maybe$Just(
+						$author$project$Main$buildPiece(
+							$author$project$Main$getShape(model.activePiece))),
+					playfield: A2($author$project$Main$removePieceFromPlayfield, model.activePiece, model.playfield)
+				}),
+			$author$project$Main$generateNextPiece);
+	} else {
+		var heldPiece = _v0.a;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					activePiece: heldPiece,
+					hasAlreadySwapped: true,
+					heldPiece: $elm$core$Maybe$Just(
+						$author$project$Main$buildPiece(
+							$author$project$Main$getShape(model.activePiece))),
+					playfield: A3($author$project$Main$refreshPlayfieldHelper, model.activePiece, heldPiece, model.playfield)
+				}),
+			$elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Main$maybeSwap = function (model) {
+	return model.hasAlreadySwapped ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : $author$project$Main$swap(model);
+};
 var $elm$core$Tuple$mapBoth = F3(
 	function (funcA, funcB, _v0) {
 		var x = _v0.a;
@@ -7391,6 +7432,8 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$rotate, direction, model),
 					$elm$core$Platform$Cmd$none);
+			case 'Swap':
+				return $author$project$Main$maybeSwap(model);
 			case 'GenerateNextPiece':
 				var newNextPiece = msg.a;
 				return _Utils_Tuple2(
@@ -7398,6 +7441,7 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							activePiece: model.nextPiece,
+							hasAlreadySwapped: false,
 							nextPiece: newNextPiece,
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
@@ -7431,10 +7475,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Main$getShape = function (_v0) {
-	var shape = _v0.a;
-	return shape;
-};
 var $author$project$Main$keyControls = _List_fromArray(
 	[
 		_Utils_Tuple2('left', 'move left'),
@@ -7443,7 +7483,8 @@ var $author$project$Main$keyControls = _List_fromArray(
 		_Utils_Tuple2('space', 'hard drop'),
 		_Utils_Tuple2('up', 'rotate clockwise'),
 		_Utils_Tuple2('z', 'rotate counterclockwise'),
-		_Utils_Tuple2('a', 'rotate 180°')
+		_Utils_Tuple2('a', 'rotate 180°'),
+		_Utils_Tuple2('x', 'swap')
 	]);
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7583,6 +7624,16 @@ var $author$project$Main$showActionButtons = A2(
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Flip 180°')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$Swap)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Swap')
 				])),
 			A2(
 			$elm$html$Html$button,
@@ -7802,35 +7853,61 @@ var $author$project$Main$showLines = F2(
 				$author$project$Main$showLine(size),
 				playfield));
 	});
-var $author$project$Main$showNextPiece = function (piece) {
-	var nextPiece = A2(
-		$author$project$Main$setPosition,
-		A2(
-			$author$project$Main$goLeft,
-			3,
-			$author$project$Main$getPosition(piece)),
-		piece);
-	var miniPlayfield = A2(
+var $author$project$Main$showPiecePreviewHelper = function (piece) {
+	var emptyMiniPlayfield = A2(
 		$elm$core$Array$repeat,
 		3,
 		A2($elm$core$Array$repeat, 4, $author$project$Main$Empty));
-	var nextPiecePreview = A2($author$project$Main$addPieceToPlayfield, nextPiece, miniPlayfield);
+	if (piece.$ === 'Nothing') {
+		return emptyMiniPlayfield;
+	} else {
+		var piece_ = piece.a;
+		return A2(
+			$author$project$Main$addPieceToPlayfield,
+			A2(
+				$author$project$Main$setPosition,
+				A2(
+					$author$project$Main$goLeft,
+					3,
+					$author$project$Main$getPosition(piece_)),
+				piece_),
+			emptyMiniPlayfield);
+	}
+};
+var $author$project$Main$showPiecePreview = function (piece) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		A2(
+			$author$project$Main$showLines,
+			$author$project$Main$Small,
+			$author$project$Main$showPiecePreviewHelper(piece)));
+};
+var $author$project$Main$showHeldPiece = function (piece) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('next-piece')
+				$elm$html$Html$Attributes$class('piece-preview piece-preview--hold')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('hold'),
+				$author$project$Main$showPiecePreview(piece)
+			]));
+};
+var $author$project$Main$showNextPiece = function (piece) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('piece-preview piece-preview--next')
 			]),
 		_List_fromArray(
 			[
 				$elm$html$Html$text('next'),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('preview')
-					]),
-				A2($author$project$Main$showLines, $author$project$Main$Small, nextPiecePreview))
+				$author$project$Main$showPiecePreview(
+				$elm$core$Maybe$Just(piece))
 			]));
 };
 var $author$project$Main$showPlayfield = F2(
@@ -7852,6 +7929,7 @@ var $author$project$Main$view = function (model) {
 			]),
 		_List_fromArray(
 			[
+				$author$project$Main$showHeldPiece(model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
 				$author$project$Main$showNextPiece(
 				$author$project$Main$buildPiece(
