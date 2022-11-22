@@ -65,6 +65,7 @@ type RotationState
 type RotationDirection
     = Clockwise
     | CounterClockwise
+    | Flip180
 
 
 type MoveDirection
@@ -111,8 +112,7 @@ type Msg
     | MoveRight
     | SoftDrop
     | HardDrop
-    | RotateClockwise
-    | RotateCounterClockwise
+    | Rotate RotationDirection
     | NewPiece Piece
     | Tick Time.Posix
     | GotResizedWindow WindowSize
@@ -134,11 +134,8 @@ update msg model =
         HardDrop ->
             ( hardDrop model, newPiece )
 
-        RotateClockwise ->
-            ( rotate Clockwise model, Cmd.none )
-
-        RotateCounterClockwise ->
-            ( rotate CounterClockwise model, Cmd.none )
+        Rotate direction ->
+            ( rotate direction model, Cmd.none )
 
         NewPiece piece ->
             ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
@@ -325,6 +322,18 @@ cycleRotationState direction rotationState =
 
         ( CounterClockwise, Rotated270 ) ->
             Rotated180
+
+        ( Flip180, Rotated0 ) ->
+            Rotated180
+
+        ( Flip180, Rotated90 ) ->
+            Rotated270
+
+        ( Flip180, Rotated180 ) ->
+            Rotated0
+
+        ( Flip180, Rotated270 ) ->
+            Rotated90
 
 
 rotatePosition : RotationState -> RotationState -> Piece -> Piece
@@ -587,18 +596,24 @@ keyToAction string =
             SoftDrop
 
         "ArrowUp" ->
-            RotateClockwise
+            Rotate Clockwise
 
         " " ->
             -- Space key
             HardDrop
 
         "z" ->
-            RotateCounterClockwise
+            Rotate CounterClockwise
 
         "Z" ->
             -- Catch lower- or upper-case Z, just in case Caps Lock is on.
-            RotateCounterClockwise
+            Rotate CounterClockwise
+
+        "a" ->
+            Rotate Flip180
+
+        "A" ->
+            Rotate Flip180
 
         _ ->
             NoOp
@@ -929,7 +944,7 @@ showDirectionalButtons =
         , style "grid-template-rows" "repeat(3, 50px [col-start])"
         ]
         [ div [] [ text "" ]
-        , button (onClick RotateClockwise :: buttonColorAttrs) [ text "^" ]
+        , button (onClick (Rotate Clockwise) :: buttonColorAttrs) [ text "^" ]
         , div [] [ text "" ]
         , button (onClick MoveLeft :: buttonColorAttrs) [ text "<" ]
         , div [] [ text "" ]
@@ -943,8 +958,9 @@ showDirectionalButtons =
 showActionButtons : Html Msg
 showActionButtons =
     div [ style "display" "flex", style "flex-direction" "column", style "justify-content" "space-evenly" ]
-        [ button ([ onClick RotateClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate Clockwise" ]
-        , button ([ onClick RotateCounterClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate CCW" ]
+        [ button ([ onClick (Rotate Clockwise), style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate Clockwise" ]
+        , button ([ onClick (Rotate CounterClockwise), style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate CCW" ]
+        , button ([ onClick (Rotate Flip180), style "height" "40px" ] ++ buttonColorAttrs) [ text "Flip 180°" ]
         , button ([ onClick HardDrop, style "height" "40px" ] ++ buttonColorAttrs) [ text "Hard Drop" ]
         ]
 
@@ -974,6 +990,7 @@ keyControls =
     , ( "space", "hard drop" )
     , ( "up", "rotate clockwise" )
     , ( "z", "rotate counterclockwise" )
+    , ( "a", "rotate 180°" )
     ]
 
 
@@ -1014,7 +1031,6 @@ subscriptions _ =
 
 
 {-
-   TODO 180 degree rotation
    TODO Show next piece
    TODO Allow piece swapping/holding
    TODO Clean up code and pretty up mobile UI

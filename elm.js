@@ -6178,12 +6178,16 @@ var $elm$time$Time$every = F2(
 		return $elm$time$Time$subscription(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
+var $author$project$Main$Clockwise = {$: 'Clockwise'};
+var $author$project$Main$CounterClockwise = {$: 'CounterClockwise'};
+var $author$project$Main$Flip180 = {$: 'Flip180'};
 var $author$project$Main$HardDrop = {$: 'HardDrop'};
 var $author$project$Main$MoveLeft = {$: 'MoveLeft'};
 var $author$project$Main$MoveRight = {$: 'MoveRight'};
 var $author$project$Main$NoOp = {$: 'NoOp'};
-var $author$project$Main$RotateClockwise = {$: 'RotateClockwise'};
-var $author$project$Main$RotateCounterClockwise = {$: 'RotateCounterClockwise'};
+var $author$project$Main$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
+};
 var $author$project$Main$SoftDrop = {$: 'SoftDrop'};
 var $author$project$Main$keyToAction = function (string) {
 	switch (string) {
@@ -6194,13 +6198,17 @@ var $author$project$Main$keyToAction = function (string) {
 		case 'ArrowDown':
 			return $author$project$Main$SoftDrop;
 		case 'ArrowUp':
-			return $author$project$Main$RotateClockwise;
+			return $author$project$Main$Rotate($author$project$Main$Clockwise);
 		case ' ':
 			return $author$project$Main$HardDrop;
 		case 'z':
-			return $author$project$Main$RotateCounterClockwise;
+			return $author$project$Main$Rotate($author$project$Main$CounterClockwise);
 		case 'Z':
-			return $author$project$Main$RotateCounterClockwise;
+			return $author$project$Main$Rotate($author$project$Main$CounterClockwise);
+		case 'a':
+			return $author$project$Main$Rotate($author$project$Main$Flip180);
+		case 'A':
+			return $author$project$Main$Rotate($author$project$Main$Flip180);
 		default:
 			return $author$project$Main$NoOp;
 	}
@@ -6445,8 +6453,6 @@ var $author$project$Main$subscriptions = function (_v0) {
 				$elm$browser$Browser$Events$onResize($author$project$Main$windowResizeListener)
 			]));
 };
-var $author$project$Main$Clockwise = {$: 'Clockwise'};
-var $author$project$Main$CounterClockwise = {$: 'CounterClockwise'};
 var $author$project$Main$Down = {$: 'Down'};
 var $author$project$Main$Left = {$: 'Left'};
 var $author$project$Main$Right = {$: 'Right'};
@@ -7212,44 +7218,64 @@ var $author$project$Main$Rotated90 = {$: 'Rotated90'};
 var $author$project$Main$cycleRotationState = F2(
 	function (direction, rotationState) {
 		var _v0 = _Utils_Tuple2(direction, rotationState);
-		if (_v0.a.$ === 'Clockwise') {
-			switch (_v0.b.$) {
-				case 'Rotated0':
-					var _v1 = _v0.a;
-					var _v2 = _v0.b;
-					return $author$project$Main$Rotated90;
-				case 'Rotated90':
-					var _v3 = _v0.a;
-					var _v4 = _v0.b;
-					return $author$project$Main$Rotated180;
-				case 'Rotated180':
-					var _v5 = _v0.a;
-					var _v6 = _v0.b;
-					return $author$project$Main$Rotated270;
-				default:
-					var _v7 = _v0.a;
-					var _v8 = _v0.b;
-					return $author$project$Main$Rotated0;
-			}
-		} else {
-			switch (_v0.b.$) {
-				case 'Rotated0':
-					var _v9 = _v0.a;
-					var _v10 = _v0.b;
-					return $author$project$Main$Rotated270;
-				case 'Rotated90':
-					var _v11 = _v0.a;
-					var _v12 = _v0.b;
-					return $author$project$Main$Rotated0;
-				case 'Rotated180':
-					var _v13 = _v0.a;
-					var _v14 = _v0.b;
-					return $author$project$Main$Rotated90;
-				default:
-					var _v15 = _v0.a;
-					var _v16 = _v0.b;
-					return $author$project$Main$Rotated180;
-			}
+		switch (_v0.a.$) {
+			case 'Clockwise':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return $author$project$Main$Rotated90;
+					case 'Rotated90':
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return $author$project$Main$Rotated180;
+					case 'Rotated180':
+						var _v5 = _v0.a;
+						var _v6 = _v0.b;
+						return $author$project$Main$Rotated270;
+					default:
+						var _v7 = _v0.a;
+						var _v8 = _v0.b;
+						return $author$project$Main$Rotated0;
+				}
+			case 'CounterClockwise':
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v9 = _v0.a;
+						var _v10 = _v0.b;
+						return $author$project$Main$Rotated270;
+					case 'Rotated90':
+						var _v11 = _v0.a;
+						var _v12 = _v0.b;
+						return $author$project$Main$Rotated0;
+					case 'Rotated180':
+						var _v13 = _v0.a;
+						var _v14 = _v0.b;
+						return $author$project$Main$Rotated90;
+					default:
+						var _v15 = _v0.a;
+						var _v16 = _v0.b;
+						return $author$project$Main$Rotated180;
+				}
+			default:
+				switch (_v0.b.$) {
+					case 'Rotated0':
+						var _v17 = _v0.a;
+						var _v18 = _v0.b;
+						return $author$project$Main$Rotated180;
+					case 'Rotated90':
+						var _v19 = _v0.a;
+						var _v20 = _v0.b;
+						return $author$project$Main$Rotated270;
+					case 'Rotated180':
+						var _v21 = _v0.a;
+						var _v22 = _v0.b;
+						return $author$project$Main$Rotated0;
+					default:
+						var _v23 = _v0.a;
+						var _v24 = _v0.b;
+						return $author$project$Main$Rotated90;
+				}
 		}
 	});
 var $author$project$Main$setRotationState = F2(
@@ -7309,13 +7335,10 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					$author$project$Main$hardDrop(model),
 					$author$project$Main$newPiece);
-			case 'RotateClockwise':
+			case 'Rotate':
+				var direction = msg.a;
 				return _Utils_Tuple2(
-					A2($author$project$Main$rotate, $author$project$Main$Clockwise, model),
-					$elm$core$Platform$Cmd$none);
-			case 'RotateCounterClockwise':
-				return _Utils_Tuple2(
-					A2($author$project$Main$rotate, $author$project$Main$CounterClockwise, model),
+					A2($author$project$Main$rotate, direction, model),
 					$elm$core$Platform$Cmd$none);
 			case 'NewPiece':
 				var piece = msg.a;
@@ -7354,7 +7377,8 @@ var $author$project$Main$keyControls = _List_fromArray(
 		_Utils_Tuple2('down', 'soft drop'),
 		_Utils_Tuple2('space', 'hard drop'),
 		_Utils_Tuple2('up', 'rotate clockwise'),
-		_Utils_Tuple2('z', 'rotate counterclockwise')
+		_Utils_Tuple2('z', 'rotate counterclockwise'),
+		_Utils_Tuple2('a', 'rotate 180°')
 	]);
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7488,7 +7512,8 @@ var $author$project$Main$showActionButtons = A2(
 			_Utils_ap(
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise),
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Rotate($author$project$Main$Clockwise)),
 						A2($elm$html$Html$Attributes$style, 'height', '40px')
 					]),
 				$author$project$Main$buttonColorAttrs),
@@ -7501,13 +7526,28 @@ var $author$project$Main$showActionButtons = A2(
 			_Utils_ap(
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$RotateCounterClockwise),
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Rotate($author$project$Main$CounterClockwise)),
 						A2($elm$html$Html$Attributes$style, 'height', '40px')
 					]),
 				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Rotate CCW')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Rotate($author$project$Main$Flip180)),
+						A2($elm$html$Html$Attributes$style, 'height', '40px')
+					]),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Flip 180°')
 				])),
 			A2(
 			$elm$html$Html$button,
@@ -7544,7 +7584,8 @@ var $author$project$Main$showDirectionalButtons = A2(
 			$elm$html$Html$button,
 			A2(
 				$elm$core$List$cons,
-				$elm$html$Html$Events$onClick($author$project$Main$RotateClockwise),
+				$elm$html$Html$Events$onClick(
+					$author$project$Main$Rotate($author$project$Main$Clockwise)),
 				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
