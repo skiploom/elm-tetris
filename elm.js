@@ -5985,6 +5985,7 @@ var $author$project$Main$MoveLeft = {$: 'MoveLeft'};
 var $author$project$Main$MoveRight = {$: 'MoveRight'};
 var $author$project$Main$NoOp = {$: 'NoOp'};
 var $author$project$Main$RotateClockwise = {$: 'RotateClockwise'};
+var $author$project$Main$RotateCounterClockwise = {$: 'RotateCounterClockwise'};
 var $author$project$Main$SoftDrop = {$: 'SoftDrop'};
 var $author$project$Main$keyToAction = function (string) {
 	switch (string) {
@@ -5998,6 +5999,10 @@ var $author$project$Main$keyToAction = function (string) {
 			return $author$project$Main$RotateClockwise;
 		case ' ':
 			return $author$project$Main$HardDrop;
+		case 'z':
+			return $author$project$Main$RotateCounterClockwise;
+		case 'Z':
+			return $author$project$Main$RotateCounterClockwise;
 		default:
 			return $author$project$Main$NoOp;
 	}
@@ -6242,6 +6247,8 @@ var $author$project$Main$subscriptions = function (_v0) {
 				$elm$browser$Browser$Events$onResize($author$project$Main$windowResizeListener)
 			]));
 };
+var $author$project$Main$Clockwise = {$: 'Clockwise'};
+var $author$project$Main$CounterClockwise = {$: 'CounterClockwise'};
 var $author$project$Main$Down = {$: 'Down'};
 var $author$project$Main$Left = {$: 'Left'};
 var $author$project$Main$Right = {$: 'Right'};
@@ -6794,9 +6801,9 @@ var $author$project$Main$setPosition = F2(
 		return A3($author$project$Main$Piece, shape, newPosition, rotationState);
 	});
 var $author$project$Main$movePiece = F2(
-	function (piece, whichWay) {
+	function (piece, moveDirection) {
 		var moveFunction = function () {
-			switch (whichWay.$) {
+			switch (moveDirection.$) {
 				case 'Left':
 					return $author$project$Main$goLeft(1);
 				case 'Right':
@@ -6812,9 +6819,9 @@ var $author$project$Main$movePiece = F2(
 			piece);
 	});
 var $author$project$Main$canPieceMoveThatWay = F2(
-	function (model, whichWay) {
+	function (model, moveDirection) {
 		var destination = $author$project$Main$getPosition(
-			A2($author$project$Main$movePiece, model.activePiece, whichWay));
+			A2($author$project$Main$movePiece, model.activePiece, moveDirection));
 		return $author$project$Main$isWithinPlayfieldBounds(destination) && A2($author$project$Main$areSpacesEmpty, destination, model);
 	});
 var $author$project$Main$isThereAPieceBelow = function (model) {
@@ -6888,16 +6895,16 @@ var $author$project$Main$refreshPlayfieldHelper = F3(
 			A2($author$project$Main$removePieceFromPlayfield, oldPiece, playfield));
 	});
 var $author$project$Main$refreshPlayfield = F2(
-	function (model, whichWay) {
-		var movedPiece = A2($author$project$Main$movePiece, model.activePiece, whichWay);
+	function (model, moveDirection) {
+		var movedPiece = A2($author$project$Main$movePiece, model.activePiece, moveDirection);
 		var newPlayfield = A3($author$project$Main$refreshPlayfieldHelper, model.activePiece, movedPiece, model.playfield);
 		return _Utils_update(
 			model,
 			{activePiece: movedPiece, playfield: newPlayfield});
 	});
 var $author$project$Main$maybeRefreshPlayfield = F2(
-	function (model, whichWay) {
-		return A2($author$project$Main$canPieceMoveThatWay, model, whichWay) ? A2($author$project$Main$refreshPlayfield, model, whichWay) : model;
+	function (model, moveDirection) {
+		return A2($author$project$Main$canPieceMoveThatWay, model, moveDirection) ? A2($author$project$Main$refreshPlayfield, model, moveDirection) : model;
 	});
 var $elm$core$Tuple$mapBoth = F3(
 	function (funcA, funcB, _v0) {
@@ -7207,58 +7214,126 @@ var $author$project$Main$getRotationDelta = function (_v0) {
 			}
 	}
 };
-var $author$project$Main$rotatePosition = function (piece) {
-	return A2(
-		$author$project$Main$applyRotationDelta,
-		$author$project$Main$getRotationDelta(piece),
-		piece);
-};
+var $author$project$Main$mapRotationDelta = F2(
+	function (fn, rd) {
+		return _Utils_update(
+			rd,
+			{
+				d1: fn(rd.d1),
+				d2: fn(rd.d2),
+				d3: fn(rd.d3),
+				d4: fn(rd.d4)
+			});
+	});
+var $author$project$Main$rotatePosition = F2(
+	function (direction, piece) {
+		var maybeReverse = function () {
+			if (direction.$ === 'Clockwise') {
+				return $elm$core$Basics$identity;
+			} else {
+				return $author$project$Main$mapRotationDelta(
+					A2(
+						$elm$core$Tuple$mapBoth,
+						$elm$core$Basics$mul(-1),
+						$elm$core$Basics$mul(-1)));
+			}
+		}();
+		return A2(
+			$author$project$Main$applyRotationDelta,
+			maybeReverse(
+				$author$project$Main$getRotationDelta(piece)),
+			piece);
+	});
 var $author$project$Main$Rotated180 = {$: 'Rotated180'};
 var $author$project$Main$Rotated270 = {$: 'Rotated270'};
 var $author$project$Main$Rotated90 = {$: 'Rotated90'};
-var $author$project$Main$cycleRotationState = function (currentState) {
-	switch (currentState.$) {
-		case 'Rotated0':
-			return $author$project$Main$Rotated90;
-		case 'Rotated90':
-			return $author$project$Main$Rotated180;
-		case 'Rotated180':
-			return $author$project$Main$Rotated270;
-		default:
-			return $author$project$Main$Rotated0;
-	}
-};
-var $author$project$Main$setRotationState = function (_v0) {
-	var shape = _v0.a;
-	var position = _v0.b;
-	var rotationState = _v0.c;
-	return A3(
-		$author$project$Main$Piece,
-		shape,
-		position,
-		$author$project$Main$cycleRotationState(rotationState));
-};
-var $author$project$Main$rotateClockwiseHelper = function (piece) {
-	return $author$project$Main$rotatePosition(
-		$author$project$Main$setRotationState(piece));
-};
-var $author$project$Main$canPieceRotateThatWay = function (model) {
-	var destination = $author$project$Main$getPosition(
-		$author$project$Main$rotateClockwiseHelper(model.activePiece));
-	return $author$project$Main$isWithinPlayfieldBounds(destination) && A2($author$project$Main$areSpacesEmpty, destination, model);
-};
-var $author$project$Main$rotateClockwise = function (model) {
-	return $author$project$Main$canPieceRotateThatWay(model) ? _Utils_update(
-		model,
-		{
-			activePiece: $author$project$Main$rotateClockwiseHelper(model.activePiece),
-			playfield: A3(
-				$author$project$Main$refreshPlayfieldHelper,
-				model.activePiece,
-				$author$project$Main$rotateClockwiseHelper(model.activePiece),
-				model.playfield)
-		}) : model;
-};
+var $author$project$Main$cycleRotationState = F2(
+	function (direction, rotationState) {
+		var _v0 = _Utils_Tuple2(direction, rotationState);
+		if (_v0.a.$ === 'Clockwise') {
+			switch (_v0.b.$) {
+				case 'Rotated0':
+					var _v1 = _v0.a;
+					var _v2 = _v0.b;
+					return $author$project$Main$Rotated90;
+				case 'Rotated90':
+					var _v3 = _v0.a;
+					var _v4 = _v0.b;
+					return $author$project$Main$Rotated180;
+				case 'Rotated180':
+					var _v5 = _v0.a;
+					var _v6 = _v0.b;
+					return $author$project$Main$Rotated270;
+				default:
+					var _v7 = _v0.a;
+					var _v8 = _v0.b;
+					return $author$project$Main$Rotated0;
+			}
+		} else {
+			switch (_v0.b.$) {
+				case 'Rotated0':
+					var _v9 = _v0.a;
+					var _v10 = _v0.b;
+					return $author$project$Main$Rotated270;
+				case 'Rotated90':
+					var _v11 = _v0.a;
+					var _v12 = _v0.b;
+					return $author$project$Main$Rotated0;
+				case 'Rotated180':
+					var _v13 = _v0.a;
+					var _v14 = _v0.b;
+					return $author$project$Main$Rotated90;
+				default:
+					var _v15 = _v0.a;
+					var _v16 = _v0.b;
+					return $author$project$Main$Rotated180;
+			}
+		}
+	});
+var $author$project$Main$setRotationState = F2(
+	function (direction, _v0) {
+		var shape = _v0.a;
+		var position = _v0.b;
+		var rotationState = _v0.c;
+		return A3(
+			$author$project$Main$Piece,
+			shape,
+			position,
+			A2($author$project$Main$cycleRotationState, direction, rotationState));
+	});
+var $author$project$Main$rotateHelper = F2(
+	function (direction, piece) {
+		if (direction.$ === 'Clockwise') {
+			return A2(
+				$author$project$Main$rotatePosition,
+				direction,
+				A2($author$project$Main$setRotationState, direction, piece));
+		} else {
+			return A2(
+				$author$project$Main$setRotationState,
+				direction,
+				A2($author$project$Main$rotatePosition, direction, piece));
+		}
+	});
+var $author$project$Main$canPieceRotateThatWay = F2(
+	function (direction, model) {
+		var destination = $author$project$Main$getPosition(
+			A2($author$project$Main$rotateHelper, direction, model.activePiece));
+		return $author$project$Main$isWithinPlayfieldBounds(destination) && A2($author$project$Main$areSpacesEmpty, destination, model);
+	});
+var $author$project$Main$rotate = F2(
+	function (direction, model) {
+		return A2($author$project$Main$canPieceRotateThatWay, direction, model) ? _Utils_update(
+			model,
+			{
+				activePiece: A2($author$project$Main$rotateHelper, direction, model.activePiece),
+				playfield: A3(
+					$author$project$Main$refreshPlayfieldHelper,
+					model.activePiece,
+					A2($author$project$Main$rotateHelper, direction, model.activePiece),
+					model.playfield)
+			}) : model;
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -7279,7 +7354,11 @@ var $author$project$Main$update = F2(
 					$author$project$Main$newPiece);
 			case 'RotateClockwise':
 				return _Utils_Tuple2(
-					$author$project$Main$rotateClockwise(model),
+					A2($author$project$Main$rotate, $author$project$Main$Clockwise, model),
+					$elm$core$Platform$Cmd$none);
+			case 'RotateCounterClockwise':
+				return _Utils_Tuple2(
+					A2($author$project$Main$rotate, $author$project$Main$CounterClockwise, model),
 					$elm$core$Platform$Cmd$none);
 			case 'NewPiece':
 				var piece = msg.a;
@@ -7315,9 +7394,10 @@ var $author$project$Main$keyControls = _List_fromArray(
 	[
 		_Utils_Tuple2('left', 'move left'),
 		_Utils_Tuple2('right', 'move right'),
-		_Utils_Tuple2('up', 'rotate clockwise'),
 		_Utils_Tuple2('down', 'soft drop'),
-		_Utils_Tuple2('space', 'hard drop')
+		_Utils_Tuple2('space', 'hard drop'),
+		_Utils_Tuple2('up', 'rotate clockwise'),
+		_Utils_Tuple2('z', 'rotate counterclockwise')
 	]);
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7457,7 +7537,20 @@ var $author$project$Main$showActionButtons = A2(
 				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('rotate')
+					$elm$html$Html$text('Rotate Clockwise')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$RotateCounterClockwise),
+						A2($elm$html$Html$Attributes$style, 'height', '40px')
+					]),
+				$author$project$Main$buttonColorAttrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Rotate CCW')
 				])),
 			A2(
 			$elm$html$Html$button,
@@ -7470,7 +7563,7 @@ var $author$project$Main$showActionButtons = A2(
 				$author$project$Main$buttonColorAttrs),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('hard drop')
+					$elm$html$Html$text('Hard Drop')
 				]))
 		]));
 var $author$project$Main$showDirectionalButtons = A2(

@@ -62,7 +62,12 @@ type RotationState
     | Rotated270
 
 
-type WhichWay
+type RotationDirection
+    = Clockwise
+    | CounterClockwise
+
+
+type MoveDirection
     = Left
     | Right
     | Down
@@ -107,6 +112,7 @@ type Msg
     | SoftDrop
     | HardDrop
     | RotateClockwise
+    | RotateCounterClockwise
     | NewPiece Piece
     | Tick Time.Posix
     | GotResizedWindow WindowSize
@@ -129,7 +135,10 @@ update msg model =
             ( hardDrop model, newPiece )
 
         RotateClockwise ->
-            ( rotateClockwise model, Cmd.none )
+            ( rotate Clockwise model, Cmd.none )
+
+        RotateCounterClockwise ->
+            ( rotate CounterClockwise model, Cmd.none )
 
         NewPiece piece ->
             ( { model | playfield = addPieceToPlayfield piece (clearLines model.playfield), activePiece = piece }, Cmd.none )
@@ -144,29 +153,29 @@ update msg model =
             ( model, Cmd.none )
 
 
-maybeRefreshPlayfield : Model -> WhichWay -> Model
-maybeRefreshPlayfield model whichWay =
-    if canPieceMoveThatWay model whichWay then
-        refreshPlayfield model whichWay
+maybeRefreshPlayfield : Model -> MoveDirection -> Model
+maybeRefreshPlayfield model moveDirection =
+    if canPieceMoveThatWay model moveDirection then
+        refreshPlayfield model moveDirection
 
     else
         model
 
 
-canPieceMoveThatWay : Model -> WhichWay -> Bool
-canPieceMoveThatWay model whichWay =
+canPieceMoveThatWay : Model -> MoveDirection -> Bool
+canPieceMoveThatWay model moveDirection =
     let
         destination =
-            getPosition (movePiece model.activePiece whichWay)
+            getPosition (movePiece model.activePiece moveDirection)
     in
     isWithinPlayfieldBounds destination && areSpacesEmpty destination model
 
 
-canPieceRotateThatWay : Model -> Bool
-canPieceRotateThatWay model =
+canPieceRotateThatWay : RotationDirection -> Model -> Bool
+canPieceRotateThatWay direction model =
     let
         destination =
-            getPosition (rotateClockwiseHelper model.activePiece)
+            getPosition (rotateHelper direction model.activePiece)
     in
     isWithinPlayfieldBounds destination && areSpacesEmpty destination model
 
@@ -207,11 +216,11 @@ positionToList pos =
     [ pos.point1, pos.point2, pos.point3, pos.point4 ]
 
 
-refreshPlayfield : Model -> WhichWay -> Model
-refreshPlayfield model whichWay =
+refreshPlayfield : Model -> MoveDirection -> Model
+refreshPlayfield model moveDirection =
     let
         movedPiece =
-            movePiece model.activePiece whichWay
+            movePiece model.activePiece moveDirection
 
         newPlayfield =
             refreshPlayfieldHelper model.activePiece movedPiece model.playfield
@@ -226,11 +235,11 @@ refreshPlayfieldHelper oldPiece newPiece_ playfield =
         |> addPieceToPlayfield newPiece_
 
 
-movePiece : Piece -> WhichWay -> Piece
-movePiece piece whichWay =
+movePiece : Piece -> MoveDirection -> Piece
+movePiece piece moveDirection =
     let
         moveFunction =
-            case whichWay of
+            case moveDirection of
                 Left ->
                     goLeft 1
 
@@ -258,53 +267,80 @@ goDown numSpaces pos =
     mapPosition (Tuple.mapSecond ((+) numSpaces)) pos
 
 
-rotateClockwise : Model -> Model
-rotateClockwise model =
-    if canPieceRotateThatWay model then
+rotate : RotationDirection -> Model -> Model
+rotate direction model =
+    if canPieceRotateThatWay direction model then
         { model
-            | activePiece = rotateClockwiseHelper model.activePiece
-            , playfield = refreshPlayfieldHelper model.activePiece (rotateClockwiseHelper model.activePiece) model.playfield
+            | activePiece = rotateHelper direction model.activePiece
+            , playfield = refreshPlayfieldHelper model.activePiece (rotateHelper direction model.activePiece) model.playfield
         }
 
     else
         model
 
 
-rotateClockwiseHelper : Piece -> Piece
-rotateClockwiseHelper piece =
-    piece
-        |> setRotationState
-        |> rotatePosition
+rotateHelper : RotationDirection -> Piece -> Piece
+rotateHelper direction piece =
+    case direction of
+        Clockwise ->
+            piece
+                |> setRotationState direction
+                |> rotatePosition direction
+
+        CounterClockwise ->
+            -- TODO This seems kind of code smell-y.
+            -- It doesn't seem obvious that changing the order of these functions can impact whether
+            -- we're rotating clockwise or counterclockwise.
+            piece
+                |> rotatePosition direction
+                |> setRotationState direction
 
 
-{-| Assume clockwise.
--}
-setRotationState : Piece -> Piece
-setRotationState (Piece shape position rotationState) =
-    Piece shape position (cycleRotationState rotationState)
+setRotationState : RotationDirection -> Piece -> Piece
+setRotationState direction (Piece shape position rotationState) =
+    Piece shape position (cycleRotationState direction rotationState)
 
 
-{-| Assume clockwise.
--}
-cycleRotationState : RotationState -> RotationState
-cycleRotationState currentState =
-    case currentState of
-        Rotated0 ->
+cycleRotationState : RotationDirection -> RotationState -> RotationState
+cycleRotationState direction rotationState =
+    case ( direction, rotationState ) of
+        ( Clockwise, Rotated0 ) ->
             Rotated90
 
-        Rotated90 ->
+        ( Clockwise, Rotated90 ) ->
             Rotated180
 
-        Rotated180 ->
+        ( Clockwise, Rotated180 ) ->
             Rotated270
 
-        Rotated270 ->
+        ( Clockwise, Rotated270 ) ->
             Rotated0
 
+        ( CounterClockwise, Rotated0 ) ->
+            Rotated270
 
-rotatePosition : Piece -> Piece
-rotatePosition piece =
-    applyRotationDelta (getRotationDelta piece) piece
+        ( CounterClockwise, Rotated90 ) ->
+            Rotated0
+
+        ( CounterClockwise, Rotated180 ) ->
+            Rotated90
+
+        ( CounterClockwise, Rotated270 ) ->
+            Rotated180
+
+
+rotatePosition : RotationDirection -> Piece -> Piece
+rotatePosition direction piece =
+    let
+        maybeReverse =
+            case direction of
+                Clockwise ->
+                    identity
+
+                CounterClockwise ->
+                    mapRotationDelta (Tuple.mapBoth ((*) -1) ((*) -1))
+    in
+    applyRotationDelta (maybeReverse (getRotationDelta piece)) piece
 
 
 type alias RotationDelta =
@@ -315,7 +351,8 @@ type alias RotationDelta =
     }
 
 
-{-| Eventually this should handle counterclockwise. Assume clockwise for now.
+{-| Currently, this describes the position differences between each clockwise rotation.
+Counterclockwise rotations are kind of handled upstream, by multiplying these tuples by negative 1.
 -}
 getRotationDelta : Piece -> RotationDelta
 getRotationDelta (Piece shape _ rotationState) =
@@ -431,6 +468,16 @@ applyRotationDelta { d1, d2, d3, d4 } piece =
             , point4 = Tuple.mapBoth ((+) x4) ((+) y4) pos.point4
         }
         piece
+
+
+mapRotationDelta : (( Int, Int ) -> ( Int, Int )) -> RotationDelta -> RotationDelta
+mapRotationDelta fn rd =
+    { rd
+        | d1 = fn rd.d1
+        , d2 = fn rd.d2
+        , d3 = fn rd.d3
+        , d4 = fn rd.d4
+    }
 
 
 mapPosition : (( Int, Int ) -> ( Int, Int )) -> Position -> Position
@@ -609,6 +656,13 @@ keyToAction string =
         " " ->
             -- Space key
             HardDrop
+
+        "z" ->
+            RotateCounterClockwise
+
+        "Z" ->
+            -- Catch lower- or upper-case Z, just in case Caps Lock is on.
+            RotateCounterClockwise
 
         _ ->
             NoOp
@@ -890,8 +944,9 @@ showDirectionalButtons =
 showActionButtons : Html Msg
 showActionButtons =
     div [ style "display" "flex", style "flex-direction" "column", style "justify-content" "space-evenly" ]
-        [ button ([ onClick RotateClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "rotate" ]
-        , button ([ onClick HardDrop, style "height" "40px" ] ++ buttonColorAttrs) [ text "hard drop" ]
+        [ button ([ onClick RotateClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate Clockwise" ]
+        , button ([ onClick RotateCounterClockwise, style "height" "40px" ] ++ buttonColorAttrs) [ text "Rotate CCW" ]
+        , button ([ onClick HardDrop, style "height" "40px" ] ++ buttonColorAttrs) [ text "Hard Drop" ]
         ]
 
 
@@ -916,9 +971,10 @@ keyControls : List ( String, String )
 keyControls =
     [ ( "left", "move left" )
     , ( "right", "move right" )
-    , ( "up", "rotate clockwise" )
     , ( "down", "soft drop" )
     , ( "space", "hard drop" )
+    , ( "up", "rotate clockwise" )
+    , ( "z", "rotate counterclockwise" )
     ]
 
 
@@ -959,7 +1015,6 @@ subscriptions _ =
 
 
 {-
-   TODO Counterclockwise rotation
    TODO 180 degree rotation
    TODO Show next piece
    TODO Allow piece swapping/holding
