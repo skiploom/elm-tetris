@@ -7603,39 +7603,6 @@ var $author$project$Main$showActionButtons = A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Rotate($author$project$Main$Clockwise))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Rotate Clockwise')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Rotate($author$project$Main$CounterClockwise))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Rotate CCW')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Rotate($author$project$Main$Flip180))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Flip 180°')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
 					$elm$html$Html$Events$onClick($author$project$Main$Swap)
 				]),
 			_List_fromArray(

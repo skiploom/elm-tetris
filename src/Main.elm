@@ -1055,10 +1055,7 @@ showDirectionalButtons =
 showActionButtons : Html Msg
 showActionButtons =
     div [ class "action-buttons" ]
-        [ button [ onClick (Rotate Clockwise) ] [ text "Rotate Clockwise" ]
-        , button [ onClick (Rotate CounterClockwise) ] [ text "Rotate CCW" ]
-        , button [ onClick (Rotate Flip180) ] [ text "Flip 180°" ]
-        , button [ onClick Swap ] [ text "Swap" ]
+        [ button [ onClick Swap ] [ text "Swap" ]
         , button [ onClick HardDrop ] [ text "Hard Drop" ]
         ]
 
