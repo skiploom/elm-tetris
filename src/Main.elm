@@ -904,16 +904,16 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 view : Model -> Html Msg
 view model =
-    div [ class "main" ]
-        [ showHeldPiece model.heldPiece
+    div [ class (.mainClass (getStyleConfig model.windowSize)) ]
+        [ showHeldPiece model.windowSize model.heldPiece
         , showPlayfield model.windowSize model.playfield
-        , showNextPiece model.nextPiece
+        , showNextPiece model.windowSize model.nextPiece
         , showControls model.windowSize
         ]
 
 
-showHeldPiece : Maybe Piece -> Html Msg
-showHeldPiece piece =
+showHeldPiece : WindowSize -> Maybe Piece -> Html Msg
+showHeldPiece windowSize piece =
     let
         preview =
             case piece of
@@ -921,9 +921,9 @@ showHeldPiece piece =
                     text ""
 
                 Just piece_ ->
-                    showMiniPiece (getShape piece_)
+                    showMiniPiece windowSize (getShape piece_)
     in
-    div [ class "piece-preview piece-preview--hold" ]
+    div [ class (.previewClass (getStyleConfig windowSize)), class "piece-preview--hold" ]
         [ text "hold"
         , preview
         ]
@@ -963,8 +963,11 @@ showSpace size space =
 
 
 type alias StyleConfig =
-    { lineClass : String
+    { mainClass : String
+    , lineClass : String
+    , previewClass : String
     , blockHeight : Int
+    , miniBlockHeight : Int
     }
 
 
@@ -972,10 +975,10 @@ getStyleConfig : WindowSize -> StyleConfig
 getStyleConfig size =
     case size of
         Mobile ->
-            { lineClass = "line", blockHeight = 28 }
+            { mainClass = "main", lineClass = "line", previewClass = "piece-preview", blockHeight = 20, miniBlockHeight = 10 }
 
         _ ->
-            { lineClass = "line line--sm", blockHeight = 20 }
+            { mainClass = "main main--sm", lineClass = "line line--sm", previewClass = "piece-preview piece-preview--sm", blockHeight = 20, miniBlockHeight = 15 }
 
 
 spaceToColor : Space -> String
@@ -1014,11 +1017,11 @@ spaceToColor space =
             "#212121"
 
 
-showNextPiece : Piece -> Html Msg
-showNextPiece piece =
-    div [ class "piece-preview piece-preview--next" ]
+showNextPiece : WindowSize -> Piece -> Html Msg
+showNextPiece size piece =
+    div [ class (.previewClass (getStyleConfig size)), class "piece-preview--next" ]
         [ text "next"
-        , showMiniPiece (getShape piece)
+        , showMiniPiece size (getShape piece)
         ]
 
 
@@ -1107,23 +1110,23 @@ showDescription description =
     li [] [ text description ]
 
 
-showMiniPiece : Shape -> Html Msg
-showMiniPiece shape =
+showMiniPiece : WindowSize -> Shape -> Html Msg
+showMiniPiece size shape =
     let
-        miniBlockWidth =
-            15
+        miniBlockHeight =
+            .miniBlockHeight (getStyleConfig size)
 
         viewBoxWidth =
-            miniBlockWidth * 4 + 10
+            miniBlockHeight * 4 + 10
 
         viewBoxHeight =
-            miniBlockWidth * 2 + 10
+            miniBlockHeight * 2 + 10
 
-        ( w, vW, vH ) =
-            ( String.fromInt miniBlockWidth, String.fromInt viewBoxWidth, String.fromInt viewBoxHeight )
+        ( h, vW, vH ) =
+            ( String.fromInt miniBlockHeight, String.fromInt viewBoxWidth, String.fromInt viewBoxHeight )
 
         buildMiniBlock ( a, b ) =
-            Svg.rect [ x (String.fromInt (a * miniBlockWidth + 11)), y (String.fromInt (b * miniBlockWidth + 1)), width w, height w, fill (spaceToColor (Filled shape)), stroke "#212121", strokeWidth "1" ] []
+            Svg.rect [ x (String.fromInt (a * miniBlockHeight + 11)), y (String.fromInt (b * miniBlockHeight + 1)), width h, height h, fill (spaceToColor (Filled shape)), stroke "#212121", strokeWidth "1" ] []
 
         buildMiniPiece p1 p2 p3 p4 =
             Svg.svg [ width vW, height vH, viewBox (String.join " " [ "0", "0", vW, vH ]) ]
@@ -1171,7 +1174,6 @@ subscriptions _ =
 
 
 {-
-   TODO Clean up code and pretty up mobile UI
    TODO Fix piece randomizing to be more like Tetris Guideline
    TODO Show next 5 pieces
    TODO Either kick tables or T-spins

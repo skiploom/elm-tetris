@@ -7475,6 +7475,13 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Main$getStyleConfig = function (size) {
+	if (size.$ === 'Mobile') {
+		return {blockHeight: 20, lineClass: 'line', mainClass: 'main', miniBlockHeight: 10, previewClass: 'piece-preview'};
+	} else {
+		return {blockHeight: 20, lineClass: 'line line--sm', mainClass: 'main main--sm', miniBlockHeight: 15, previewClass: 'piece-preview piece-preview--sm'};
+	}
+};
 var $author$project$Main$keyControls = _List_fromArray(
 	[
 		_Utils_Tuple2('left', 'move left'),
@@ -7752,149 +7759,169 @@ var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Main$showMiniPiece = function (shape) {
-	var miniBlockWidth = 15;
-	var viewBoxHeight = (miniBlockWidth * 2) + 10;
-	var viewBoxWidth = (miniBlockWidth * 4) + 10;
-	var _v0 = _Utils_Tuple3(
-		$elm$core$String$fromInt(miniBlockWidth),
-		$elm$core$String$fromInt(viewBoxWidth),
-		$elm$core$String$fromInt(viewBoxHeight));
-	var w = _v0.a;
-	var vW = _v0.b;
-	var vH = _v0.c;
-	var buildMiniBlock = function (_v2) {
-		var a = _v2.a;
-		var b = _v2.b;
+var $author$project$Main$showMiniPiece = F2(
+	function (size, shape) {
+		var miniBlockHeight = function ($) {
+			return $.miniBlockHeight;
+		}(
+			$author$project$Main$getStyleConfig(size));
+		var viewBoxHeight = (miniBlockHeight * 2) + 10;
+		var viewBoxWidth = (miniBlockHeight * 4) + 10;
+		var _v0 = _Utils_Tuple3(
+			$elm$core$String$fromInt(miniBlockHeight),
+			$elm$core$String$fromInt(viewBoxWidth),
+			$elm$core$String$fromInt(viewBoxHeight));
+		var h = _v0.a;
+		var vW = _v0.b;
+		var vH = _v0.c;
+		var buildMiniBlock = function (_v2) {
+			var a = _v2.a;
+			var b = _v2.b;
+			return A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromInt((a * miniBlockHeight) + 11)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt((b * miniBlockHeight) + 1)),
+						$elm$svg$Svg$Attributes$width(h),
+						$elm$svg$Svg$Attributes$height(h),
+						$elm$svg$Svg$Attributes$fill(
+						$author$project$Main$spaceToColor(
+							$author$project$Main$Filled(shape))),
+						$elm$svg$Svg$Attributes$stroke('#212121'),
+						$elm$svg$Svg$Attributes$strokeWidth('1')
+					]),
+				_List_Nil);
+		};
+		var buildMiniPiece = F4(
+			function (p1, p2, p3, p4) {
+				return A2(
+					$elm$svg$Svg$svg,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width(vW),
+							$elm$svg$Svg$Attributes$height(vH),
+							$elm$svg$Svg$Attributes$viewBox(
+							A2(
+								$elm$core$String$join,
+								' ',
+								_List_fromArray(
+									['0', '0', vW, vH])))
+						]),
+					_List_fromArray(
+						[
+							buildMiniBlock(p1),
+							buildMiniBlock(p2),
+							buildMiniBlock(p3),
+							buildMiniBlock(p4)
+						]));
+			});
+		switch (shape.$) {
+			case 'I':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(1, 0),
+					_Utils_Tuple2(2, 0),
+					_Utils_Tuple2(3, 0));
+			case 'O':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(0, 1),
+					_Utils_Tuple2(1, 0),
+					_Utils_Tuple2(1, 1));
+			case 'T':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 1),
+					_Utils_Tuple2(1, 1),
+					_Utils_Tuple2(1, 0),
+					_Utils_Tuple2(2, 1));
+			case 'S':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 1),
+					_Utils_Tuple2(1, 1),
+					_Utils_Tuple2(1, 0),
+					_Utils_Tuple2(2, 0));
+			case 'Z':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(1, 0),
+					_Utils_Tuple2(1, 1),
+					_Utils_Tuple2(2, 1));
+			case 'J':
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(0, 1),
+					_Utils_Tuple2(1, 1),
+					_Utils_Tuple2(2, 1));
+			default:
+				return A4(
+					buildMiniPiece,
+					_Utils_Tuple2(0, 1),
+					_Utils_Tuple2(1, 1),
+					_Utils_Tuple2(2, 1),
+					_Utils_Tuple2(2, 0));
+		}
+	});
+var $author$project$Main$showHeldPiece = F2(
+	function (windowSize, piece) {
+		var preview = function () {
+			if (piece.$ === 'Nothing') {
+				return $elm$html$Html$text('');
+			} else {
+				var piece_ = piece.a;
+				return A2(
+					$author$project$Main$showMiniPiece,
+					windowSize,
+					$author$project$Main$getShape(piece_));
+			}
+		}();
 		return A2(
-			$elm$svg$Svg$rect,
+			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt((a * miniBlockWidth) + 11)),
-					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromInt((b * miniBlockWidth) + 1)),
-					$elm$svg$Svg$Attributes$width(w),
-					$elm$svg$Svg$Attributes$height(w),
-					$elm$svg$Svg$Attributes$fill(
-					$author$project$Main$spaceToColor(
-						$author$project$Main$Filled(shape))),
-					$elm$svg$Svg$Attributes$stroke('#212121'),
-					$elm$svg$Svg$Attributes$strokeWidth('1')
+					$elm$html$Html$Attributes$class(
+					function ($) {
+						return $.previewClass;
+					}(
+						$author$project$Main$getStyleConfig(windowSize))),
+					$elm$html$Html$Attributes$class('piece-preview--hold')
 				]),
-			_List_Nil);
-	};
-	var buildMiniPiece = F4(
-		function (p1, p2, p3, p4) {
-			return A2(
-				$elm$svg$Svg$svg,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$width(vW),
-						$elm$svg$Svg$Attributes$height(vH),
-						$elm$svg$Svg$Attributes$viewBox(
-						A2(
-							$elm$core$String$join,
-							' ',
-							_List_fromArray(
-								['0', '0', vW, vH])))
-					]),
-				_List_fromArray(
-					[
-						buildMiniBlock(p1),
-						buildMiniBlock(p2),
-						buildMiniBlock(p3),
-						buildMiniBlock(p4)
-					]));
-		});
-	switch (shape.$) {
-		case 'I':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(1, 0),
-				_Utils_Tuple2(2, 0),
-				_Utils_Tuple2(3, 0));
-		case 'O':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(0, 1),
-				_Utils_Tuple2(1, 0),
-				_Utils_Tuple2(1, 1));
-		case 'T':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 1),
-				_Utils_Tuple2(1, 1),
-				_Utils_Tuple2(1, 0),
-				_Utils_Tuple2(2, 1));
-		case 'S':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 1),
-				_Utils_Tuple2(1, 1),
-				_Utils_Tuple2(1, 0),
-				_Utils_Tuple2(2, 0));
-		case 'Z':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(1, 0),
-				_Utils_Tuple2(1, 1),
-				_Utils_Tuple2(2, 1));
-		case 'J':
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 0),
-				_Utils_Tuple2(0, 1),
-				_Utils_Tuple2(1, 1),
-				_Utils_Tuple2(2, 1));
-		default:
-			return A4(
-				buildMiniPiece,
-				_Utils_Tuple2(0, 1),
-				_Utils_Tuple2(1, 1),
-				_Utils_Tuple2(2, 1),
-				_Utils_Tuple2(2, 0));
-	}
-};
-var $author$project$Main$showHeldPiece = function (piece) {
-	var preview = function () {
-		if (piece.$ === 'Nothing') {
-			return $elm$html$Html$text('');
-		} else {
-			var piece_ = piece.a;
-			return $author$project$Main$showMiniPiece(
-				$author$project$Main$getShape(piece_));
-		}
-	}();
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('piece-preview piece-preview--hold')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('hold'),
-				preview
-			]));
-};
-var $author$project$Main$showNextPiece = function (piece) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('piece-preview piece-preview--next')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('next'),
-				$author$project$Main$showMiniPiece(
-				$author$project$Main$getShape(piece))
-			]));
-};
+			_List_fromArray(
+				[
+					$elm$html$Html$text('hold'),
+					preview
+				]));
+	});
+var $author$project$Main$showNextPiece = F2(
+	function (size, piece) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					function ($) {
+						return $.previewClass;
+					}(
+						$author$project$Main$getStyleConfig(size))),
+					$elm$html$Html$Attributes$class('piece-preview--next')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('next'),
+					A2(
+					$author$project$Main$showMiniPiece,
+					size,
+					$author$project$Main$getShape(piece))
+				]));
+	});
 var $elm$core$Elm$JsArray$map = _JsArray_map;
 var $elm$core$Array$map = F2(
 	function (func, _v0) {
@@ -7920,13 +7947,6 @@ var $elm$core$Array$map = F2(
 			A2($elm$core$Elm$JsArray$map, helper, tree),
 			A2($elm$core$Elm$JsArray$map, func, tail));
 	});
-var $author$project$Main$getStyleConfig = function (size) {
-	if (size.$ === 'Mobile') {
-		return {blockHeight: 28, lineClass: 'line'};
-	} else {
-		return {blockHeight: 20, lineClass: 'line line--sm'};
-	}
-};
 var $author$project$Main$showSpace = F2(
 	function (size, space) {
 		var blockHeight = function ($) {
@@ -8011,13 +8031,17 @@ var $author$project$Main$view = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('main')
+				$elm$html$Html$Attributes$class(
+				function ($) {
+					return $.mainClass;
+				}(
+					$author$project$Main$getStyleConfig(model.windowSize)))
 			]),
 		_List_fromArray(
 			[
-				$author$project$Main$showHeldPiece(model.heldPiece),
+				A2($author$project$Main$showHeldPiece, model.windowSize, model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
-				$author$project$Main$showNextPiece(model.nextPiece),
+				A2($author$project$Main$showNextPiece, model.windowSize, model.nextPiece),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };
