@@ -7712,38 +7712,6 @@ var $author$project$Main$showMobileControls = A2(
 var $author$project$Main$showControls = function (windowSize) {
 	return _Utils_eq(windowSize, $author$project$Main$Mobile) ? $author$project$Main$showMobileControls : $author$project$Main$showKeyboardControls;
 };
-var $elm$core$Elm$JsArray$map = _JsArray_map;
-var $elm$core$Array$map = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = function (node) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return $elm$core$Array$SubTree(
-					A2($elm$core$Elm$JsArray$map, helper, subTree));
-			} else {
-				var values = node.a;
-				return $elm$core$Array$Leaf(
-					A2($elm$core$Elm$JsArray$map, func, values));
-			}
-		};
-		return A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A2($elm$core$Elm$JsArray$map, helper, tree),
-			A2($elm$core$Elm$JsArray$map, func, tail));
-	});
-var $author$project$Main$getStyleConfig = function (size) {
-	if (size.$ === 'Mobile') {
-		return {blockHeight: 28, lineClass: 'line'};
-	} else {
-		return {blockHeight: 20, lineClass: 'line line--sm'};
-	}
-};
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -7784,6 +7752,181 @@ var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Main$showMiniPiece = function (shape) {
+	var miniBlockWidth = 15;
+	var viewBoxHeight = (miniBlockWidth * 2) + 10;
+	var viewBoxWidth = (miniBlockWidth * 4) + 10;
+	var _v0 = _Utils_Tuple3(
+		$elm$core$String$fromInt(miniBlockWidth),
+		$elm$core$String$fromInt(viewBoxWidth),
+		$elm$core$String$fromInt(viewBoxHeight));
+	var w = _v0.a;
+	var vW = _v0.b;
+	var vH = _v0.c;
+	var buildMiniBlock = function (_v2) {
+		var a = _v2.a;
+		var b = _v2.b;
+		return A2(
+			$elm$svg$Svg$rect,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x(
+					$elm$core$String$fromInt((a * miniBlockWidth) + 11)),
+					$elm$svg$Svg$Attributes$y(
+					$elm$core$String$fromInt((b * miniBlockWidth) + 1)),
+					$elm$svg$Svg$Attributes$width(w),
+					$elm$svg$Svg$Attributes$height(w),
+					$elm$svg$Svg$Attributes$fill(
+					$author$project$Main$spaceToColor(
+						$author$project$Main$Filled(shape))),
+					$elm$svg$Svg$Attributes$stroke('#212121'),
+					$elm$svg$Svg$Attributes$strokeWidth('1')
+				]),
+			_List_Nil);
+	};
+	var buildMiniPiece = F4(
+		function (p1, p2, p3, p4) {
+			return A2(
+				$elm$svg$Svg$svg,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$width(vW),
+						$elm$svg$Svg$Attributes$height(vH),
+						$elm$svg$Svg$Attributes$viewBox(
+						A2(
+							$elm$core$String$join,
+							' ',
+							_List_fromArray(
+								['0', '0', vW, vH])))
+					]),
+				_List_fromArray(
+					[
+						buildMiniBlock(p1),
+						buildMiniBlock(p2),
+						buildMiniBlock(p3),
+						buildMiniBlock(p4)
+					]));
+		});
+	switch (shape.$) {
+		case 'I':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 0),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(2, 0),
+				_Utils_Tuple2(3, 0));
+		case 'O':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 0),
+				_Utils_Tuple2(0, 1),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(1, 1));
+		case 'T':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 1),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(2, 1));
+		case 'S':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 1),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(2, 0));
+		case 'Z':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 0),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(2, 1));
+		case 'J':
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 0),
+				_Utils_Tuple2(0, 1),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(2, 1));
+		default:
+			return A4(
+				buildMiniPiece,
+				_Utils_Tuple2(0, 1),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(2, 1),
+				_Utils_Tuple2(2, 0));
+	}
+};
+var $author$project$Main$showHeldPiece = function (piece) {
+	var preview = function () {
+		if (piece.$ === 'Nothing') {
+			return $elm$html$Html$text('');
+		} else {
+			var piece_ = piece.a;
+			return $author$project$Main$showMiniPiece(
+				$author$project$Main$getShape(piece_));
+		}
+	}();
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('piece-preview piece-preview--hold')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('hold'),
+				preview
+			]));
+};
+var $author$project$Main$showNextPiece = function (piece) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('piece-preview piece-preview--next')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('next'),
+				$author$project$Main$showMiniPiece(
+				$author$project$Main$getShape(piece))
+			]));
+};
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $author$project$Main$getStyleConfig = function (size) {
+	if (size.$ === 'Mobile') {
+		return {blockHeight: 28, lineClass: 'line'};
+	} else {
+		return {blockHeight: 20, lineClass: 'line line--sm'};
+	}
+};
 var $author$project$Main$showSpace = F2(
 	function (size, space) {
 		var blockHeight = function ($) {
@@ -7853,63 +7996,6 @@ var $author$project$Main$showLines = F2(
 				$author$project$Main$showLine(size),
 				playfield));
 	});
-var $author$project$Main$showPiecePreviewHelper = function (piece) {
-	var emptyMiniPlayfield = A2(
-		$elm$core$Array$repeat,
-		3,
-		A2($elm$core$Array$repeat, 4, $author$project$Main$Empty));
-	if (piece.$ === 'Nothing') {
-		return emptyMiniPlayfield;
-	} else {
-		var piece_ = piece.a;
-		return A2(
-			$author$project$Main$addPieceToPlayfield,
-			A2(
-				$author$project$Main$setPosition,
-				A2(
-					$author$project$Main$goLeft,
-					3,
-					$author$project$Main$getPosition(piece_)),
-				piece_),
-			emptyMiniPlayfield);
-	}
-};
-var $author$project$Main$showPiecePreview = function (piece) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		A2(
-			$author$project$Main$showLines,
-			$author$project$Main$Small,
-			$author$project$Main$showPiecePreviewHelper(piece)));
-};
-var $author$project$Main$showHeldPiece = function (piece) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('piece-preview piece-preview--hold')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('hold'),
-				$author$project$Main$showPiecePreview(piece)
-			]));
-};
-var $author$project$Main$showNextPiece = function (piece) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('piece-preview piece-preview--next')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('next'),
-				$author$project$Main$showPiecePreview(
-				$elm$core$Maybe$Just(piece))
-			]));
-};
 var $author$project$Main$showPlayfield = F2(
 	function (size, playfield) {
 		return A2(
@@ -7931,9 +8017,7 @@ var $author$project$Main$view = function (model) {
 			[
 				$author$project$Main$showHeldPiece(model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
-				$author$project$Main$showNextPiece(
-				$author$project$Main$buildPiece(
-					$author$project$Main$getShape(model.nextPiece))),
+				$author$project$Main$showNextPiece(model.nextPiece),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };

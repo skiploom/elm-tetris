@@ -907,16 +907,25 @@ view model =
     div [ class "main" ]
         [ showHeldPiece model.heldPiece
         , showPlayfield model.windowSize model.playfield
-        , showNextPiece (buildPiece (getShape model.nextPiece))
+        , showNextPiece model.nextPiece
         , showControls model.windowSize
         ]
 
 
 showHeldPiece : Maybe Piece -> Html Msg
 showHeldPiece piece =
+    let
+        preview =
+            case piece of
+                Nothing ->
+                    text ""
+
+                Just piece_ ->
+                    showMiniPiece (getShape piece_)
+    in
     div [ class "piece-preview piece-preview--hold" ]
         [ text "hold"
-        , showPiecePreview piece
+        , preview
         ]
 
 
@@ -1005,40 +1014,12 @@ spaceToColor space =
             "#212121"
 
 
-{-| This implementation is temporary.
-Most likely, a static image of the next piece will be displayed.
--}
 showNextPiece : Piece -> Html Msg
 showNextPiece piece =
     div [ class "piece-preview piece-preview--next" ]
         [ text "next"
-        , showPiecePreview (Just piece)
+        , showMiniPiece (getShape piece)
         ]
-
-
-showPiecePreview : Maybe Piece -> Html Msg
-showPiecePreview piece =
-    div [] (showLines Small (showPiecePreviewHelper piece))
-
-
-showPiecePreviewHelper : Maybe Piece -> Playfield
-showPiecePreviewHelper piece =
-    let
-        emptyMiniPlayfield =
-            Array.repeat 3 (Array.repeat 4 Empty)
-    in
-    case piece of
-        Nothing ->
-            emptyMiniPlayfield
-
-        -- We assume the piece passed to this function has a postion
-        -- equal to the piece's starting position.
-        -- For this preview, we want to shift that position a bit
-        -- to the left for simplicity. This is temporary.
-        Just piece_ ->
-            addPieceToPlayfield
-                (setPosition (goLeft 3 (getPosition piece_)) piece_)
-                emptyMiniPlayfield
 
 
 showControls : WindowSize -> Html Msg
@@ -1124,6 +1105,55 @@ showDescriptions descriptions =
 showDescription : String -> Html Msg
 showDescription description =
     li [] [ text description ]
+
+
+showMiniPiece : Shape -> Html Msg
+showMiniPiece shape =
+    let
+        miniBlockWidth =
+            15
+
+        viewBoxWidth =
+            miniBlockWidth * 4 + 10
+
+        viewBoxHeight =
+            miniBlockWidth * 2 + 10
+
+        ( w, vW, vH ) =
+            ( String.fromInt miniBlockWidth, String.fromInt viewBoxWidth, String.fromInt viewBoxHeight )
+
+        buildMiniBlock ( a, b ) =
+            Svg.rect [ x (String.fromInt (a * miniBlockWidth + 11)), y (String.fromInt (b * miniBlockWidth + 1)), width w, height w, fill (spaceToColor (Filled shape)), stroke "#212121", strokeWidth "1" ] []
+
+        buildMiniPiece p1 p2 p3 p4 =
+            Svg.svg [ width vW, height vH, viewBox (String.join " " [ "0", "0", vW, vH ]) ]
+                [ buildMiniBlock p1
+                , buildMiniBlock p2
+                , buildMiniBlock p3
+                , buildMiniBlock p4
+                ]
+    in
+    case shape of
+        I ->
+            buildMiniPiece ( 0, 0 ) ( 1, 0 ) ( 2, 0 ) ( 3, 0 )
+
+        O ->
+            buildMiniPiece ( 0, 0 ) ( 0, 1 ) ( 1, 0 ) ( 1, 1 )
+
+        T ->
+            buildMiniPiece ( 0, 1 ) ( 1, 1 ) ( 1, 0 ) ( 2, 1 )
+
+        S ->
+            buildMiniPiece ( 0, 1 ) ( 1, 1 ) ( 1, 0 ) ( 2, 0 )
+
+        Z ->
+            buildMiniPiece ( 0, 0 ) ( 1, 0 ) ( 1, 1 ) ( 2, 1 )
+
+        J ->
+            buildMiniPiece ( 0, 0 ) ( 0, 1 ) ( 1, 1 ) ( 2, 1 )
+
+        L ->
+            buildMiniPiece ( 0, 1 ) ( 1, 1 ) ( 2, 1 ) ( 2, 0 )
 
 
 

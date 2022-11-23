@@ -22,8 +22,8 @@ body {
 }
 
 .piece-preview {
-     height: 100px;
-     width: 100px;
+     height: 50px;
+     width: 75px;
      padding: 1px;
      text-align: center;
 }
