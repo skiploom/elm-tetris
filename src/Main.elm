@@ -149,7 +149,7 @@ update msg model =
             maybeSwap model
 
         GenerateNextPiece newNextPiece ->
-            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece, hasAlreadySwapped = False }, Cmd.none )
+            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece }, Cmd.none )
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -491,7 +491,7 @@ hardDrop model =
         newPlayfield =
             addPieceToPlayfield movedPiece playfieldWithoutActivePiece
     in
-    { model | activePiece = movedPiece, playfield = newPlayfield }
+    { model | activePiece = movedPiece, playfield = newPlayfield, hasAlreadySwapped = False }
 
 
 {-| Finds how many spaces the active piece can move down before colliding with existing pieces
@@ -521,6 +521,7 @@ swap model =
         Nothing ->
             ( { model
                 | heldPiece = Just (buildPiece (getShape model.activePiece))
+                , hasAlreadySwapped = True
                 , playfield = removePieceFromPlayfield model.activePiece model.playfield
               }
             , generateNextPiece
@@ -574,7 +575,7 @@ maybeLockPiece model =
         newGame model.windowSize
 
     else if isPieceStuck model then
-        ( model, generateNextPiece )
+        ( { model | hasAlreadySwapped = False }, generateNextPiece )
 
     else
         ( model, Cmd.none )

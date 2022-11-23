@@ -7112,7 +7112,7 @@ var $author$project$Main$hardDrop = function (model) {
 	var newPlayfield = A2($author$project$Main$addPieceToPlayfield, movedPiece, playfieldWithoutActivePiece);
 	return _Utils_update(
 		model,
-		{activePiece: movedPiece, playfield: newPlayfield});
+		{activePiece: movedPiece, hasAlreadySwapped: false, playfield: newPlayfield});
 };
 var $author$project$Main$isPieceAtTop = function (model) {
 	return A2(
@@ -7129,7 +7129,11 @@ var $author$project$Main$isToppedOut = function (model) {
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$maybeLockPiece = function (model) {
-	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(model, $author$project$Main$generateNextPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{hasAlreadySwapped: false}),
+		$author$project$Main$generateNextPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
 	function (oldPiece, newPiece_, playfield) {
@@ -7161,6 +7165,7 @@ var $author$project$Main$swap = function (model) {
 			_Utils_update(
 				model,
 				{
+					hasAlreadySwapped: true,
 					heldPiece: $elm$core$Maybe$Just(
 						$author$project$Main$buildPiece(
 							$author$project$Main$getShape(model.activePiece))),
@@ -7441,7 +7446,6 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							activePiece: model.nextPiece,
-							hasAlreadySwapped: false,
 							nextPiece: newNextPiece,
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
