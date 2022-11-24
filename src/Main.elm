@@ -9,6 +9,7 @@ import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
 import Random
+import Random.List
 import Svg
 import Svg.Attributes exposing (fill, height, rx, ry, stroke, strokeWidth, viewBox, width, x, y)
 import Time
@@ -28,9 +29,12 @@ main =
 
 type alias Model =
     { activePiece : Piece
-    , hasAlreadySwapped : Bool
+    , nextPieceQueue : List Piece
     , heldPiece : Maybe Piece
-    , nextPiece : Piece
+    , numPiecesGenerated : Int
+    , activeBag : Bag
+    , nextBag : Bag
+    , hasAlreadySwapped : Bool
     , playfield : Playfield
     , windowSize : WindowSize
     }
@@ -77,6 +81,10 @@ type MoveDirection
     | Down
 
 
+type alias Bag =
+    List Piece
+
+
 type alias Playfield =
     Array (Array Space)
 
@@ -111,7 +119,7 @@ init flags =
 
 
 type Msg
-    = NewGame ( Piece, Piece )
+    = NewGame NewGamePieces
     | MoveLeft
     | MoveRight
     | SoftDrop
@@ -119,6 +127,8 @@ type Msg
     | Rotate RotationDirection
     | Swap
     | GenerateNextPiece Piece
+    | GenerateBag (List Piece)
+    | Temp
     | Tick Time.Posix
     | GotResizedWindow WindowSize
     | NoOp
@@ -127,8 +137,25 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewGame ( activePiece, nextPiece ) ->
-            ( { model | playfield = addPieceToPlayfield activePiece (clearLines model.playfield), activePiece = activePiece, nextPiece = nextPiece }, Cmd.none )
+        NewGame { activePiece, nextPiece, activeBag, nextBag } ->
+            let
+                ( activePiece_, nextPieces ) =
+                    case activeBag of
+                        [] ->
+                            ( initPieceTemp, List.singleton initPieceTemp )
+
+                        head :: nextPieces_ ->
+                            ( head, nextPieces_ )
+            in
+            ( { model
+                | playfield = addPieceToPlayfield activePiece_ (clearLines model.playfield)
+                , activePiece = activePiece_
+                , nextPieceQueue = nextPieces
+                , activeBag = activeBag
+                , nextBag = nextBag
+              }
+            , Cmd.none
+            )
 
         MoveLeft ->
             ( maybeRefreshPlayfield model Left, Cmd.none )
@@ -148,8 +175,40 @@ update msg model =
         Swap ->
             maybeSwap model
 
-        GenerateNextPiece newNextPiece ->
-            ( { model | playfield = addPieceToPlayfield model.nextPiece (clearLines model.playfield), activePiece = model.nextPiece, nextPiece = newNextPiece }, Cmd.none )
+        GenerateNextPiece _ ->
+            let
+                ( nextPiece, nextNextPieces ) =
+                    case model.nextPieceQueue of
+                        [] ->
+                            ( initPieceTemp, List.singleton initPieceTemp )
+
+                        nextPiece_ :: nextNextPieces_ ->
+                            ( nextPiece_, nextNextPieces_ )
+
+                pieceToPushToQueue =
+                    List.Extra.getAt (modBy 7 (model.numPiecesGenerated - 2)) model.nextBag
+                        |> Maybe.withDefault initPieceTemp
+
+                cmd =
+                    if modBy 7 (model.numPiecesGenerated - 1) == 0 then
+                        generateBag
+
+                    else
+                        Cmd.none
+            in
+            ( { model
+                | playfield = addPieceToPlayfield nextPiece (clearLines model.playfield)
+                , activePiece = nextPiece
+                , nextPieceQueue = nextNextPieces ++ [ pieceToPushToQueue ]
+              }
+            , cmd
+            )
+
+        Temp ->
+            ( model, generateBag )
+
+        GenerateBag pieces ->
+            ( { model | activeBag = model.nextBag, nextBag = pieces }, Cmd.none )
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -491,7 +550,7 @@ hardDrop model =
         newPlayfield =
             addPieceToPlayfield movedPiece playfieldWithoutActivePiece
     in
-    { model | activePiece = movedPiece, playfield = newPlayfield, hasAlreadySwapped = False }
+    { model | activePiece = movedPiece, playfield = newPlayfield, hasAlreadySwapped = False, numPiecesGenerated = model.numPiecesGenerated + 1 }
 
 
 {-| Finds how many spaces the active piece can move down before colliding with existing pieces
@@ -522,6 +581,7 @@ swap model =
             ( { model
                 | heldPiece = Just (buildPiece (getShape model.activePiece))
                 , hasAlreadySwapped = True
+                , numPiecesGenerated = model.numPiecesGenerated + 1
                 , playfield = removePieceFromPlayfield model.activePiece model.playfield
               }
             , generateNextPiece
@@ -575,7 +635,12 @@ maybeLockPiece model =
         newGame model.windowSize
 
     else if isPieceStuck model then
-        ( { model | hasAlreadySwapped = False }, generateNextPiece )
+        ( { model
+            | hasAlreadySwapped = False
+            , numPiecesGenerated = model.numPiecesGenerated + 1
+          }
+        , generateNextPiece
+        )
 
     else
         ( model, Cmd.none )
@@ -584,14 +649,22 @@ maybeLockPiece model =
 newGame : WindowSize -> ( Model, Cmd Msg )
 newGame windowSize =
     ( { activePiece = initPieceTemp
-      , hasAlreadySwapped = False
+      , nextPieceQueue = List.singleton initPieceTemp
       , heldPiece = Nothing
-      , nextPiece = initPieceTemp
+      , numPiecesGenerated = 1
+      , activeBag = initBagTemp
+      , nextBag = initBagTemp
+      , hasAlreadySwapped = False
       , playfield = emptyPlayfield
       , windowSize = windowSize
       }
-    , generateCurrentAndNextPiece
+    , generateNewGamePieces
     )
+
+
+initBagTemp : Bag
+initBagTemp =
+    List.repeat 7 initPieceTemp
 
 
 isLineFilled : Array Space -> Bool
@@ -731,9 +804,50 @@ generateNextPiece =
     Random.generate GenerateNextPiece randomPieceHelper
 
 
-generateCurrentAndNextPiece : Cmd Msg
-generateCurrentAndNextPiece =
-    Random.generate NewGame (Random.pair randomPieceHelper randomPieceHelper)
+newGameHelper : Random.Generator NewGamePieces
+newGameHelper =
+    Random.map4 setNewGamePieces
+        randomPieceHelper
+        randomPieceHelper
+        randomBagHelper
+        randomBagHelper
+
+
+generateNewGamePieces : Cmd Msg
+generateNewGamePieces =
+    Random.generate NewGame newGameHelper
+
+
+type alias NewGamePieces =
+    { activePiece : Piece
+    , nextPiece : Piece
+    , activeBag : Bag
+    , nextBag : Bag
+    }
+
+
+setNewGamePieces : Piece -> Piece -> List Piece -> List Piece -> NewGamePieces
+setNewGamePieces activePiece nextPiece activeBag nextBag =
+    { activePiece = activePiece
+    , nextPiece = nextPiece
+    , activeBag = activeBag
+    , nextBag = nextBag
+    }
+
+
+allShapes : List Shape
+allShapes =
+    [ I, O, T, S, Z, J, L ]
+
+
+randomBagHelper : Random.Generator (List Piece)
+randomBagHelper =
+    Random.List.shuffle (List.map buildPiece allShapes)
+
+
+generateBag : Cmd Msg
+generateBag =
+    Random.generate GenerateBag randomBagHelper
 
 
 initPieceTemp : Piece
@@ -905,10 +1019,19 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 view : Model -> Html Msg
 view model =
+    let
+        nextPiece =
+            case model.nextPieceQueue of
+                [] ->
+                    initPieceTemp
+
+                nextPiece_ :: _ ->
+                    nextPiece_
+    in
     div [ class (.mainClass (getStyleConfig model.windowSize)) ]
         [ showHeldPiece model.windowSize model.heldPiece
         , showPlayfield model.windowSize model.playfield
-        , showNextPiece model.windowSize model.nextPiece
+        , showNextPiece model.windowSize nextPiece
         , showControls model.windowSize
         ]
 

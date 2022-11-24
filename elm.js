@@ -5398,33 +5398,30 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
-var $elm$random$Random$map2 = F3(
-	function (func, _v0, _v1) {
+var $elm$random$Random$map4 = F5(
+	function (func, _v0, _v1, _v2, _v3) {
 		var genA = _v0.a;
 		var genB = _v1.a;
+		var genC = _v2.a;
+		var genD = _v3.a;
 		return $elm$random$Random$Generator(
 			function (seed0) {
-				var _v2 = genA(seed0);
-				var a = _v2.a;
-				var seed1 = _v2.b;
-				var _v3 = genB(seed1);
-				var b = _v3.a;
-				var seed2 = _v3.b;
+				var _v4 = genA(seed0);
+				var a = _v4.a;
+				var seed1 = _v4.b;
+				var _v5 = genB(seed1);
+				var b = _v5.a;
+				var seed2 = _v5.b;
+				var _v6 = genC(seed2);
+				var c = _v6.a;
+				var seed3 = _v6.b;
+				var _v7 = genD(seed3);
+				var d = _v7.a;
+				var seed4 = _v7.b;
 				return _Utils_Tuple2(
-					A2(func, a, b),
-					seed2);
+					A4(func, a, b, c, d),
+					seed4);
 			});
-	});
-var $elm$random$Random$pair = F2(
-	function (genA, genB) {
-		return A3(
-			$elm$random$Random$map2,
-			F2(
-				function (a, b) {
-					return _Utils_Tuple2(a, b);
-				}),
-			genA,
-			genB);
 	});
 var $author$project$Main$I = {$: 'I'};
 var $author$project$Main$J = {$: 'J'};
@@ -5433,6 +5430,8 @@ var $author$project$Main$O = {$: 'O'};
 var $author$project$Main$S = {$: 'S'};
 var $author$project$Main$T = {$: 'T'};
 var $author$project$Main$Z = {$: 'Z'};
+var $author$project$Main$allShapes = _List_fromArray(
+	[$author$project$Main$I, $author$project$Main$O, $author$project$Main$T, $author$project$Main$S, $author$project$Main$Z, $author$project$Main$J, $author$project$Main$L]);
 var $author$project$Main$Piece = F3(
 	function (a, b, c) {
 		return {$: 'Piece', a: a, b: b, c: c};
@@ -5704,18 +5703,126 @@ var $author$project$Main$buildPiece = function (shape) {
 		$author$project$Main$initialPosition(shape),
 		$author$project$Main$initialRotationState);
 };
-var $elm$random$Random$addOne = function (value) {
-	return _Utils_Tuple2(1, value);
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$xor = _Bitwise_xor;
 var $elm$random$Random$peel = function (_v0) {
 	var state = _v0.a;
 	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
 	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$maxInt = 2147483647;
+var $elm$random$Random$minInt = -2147483648;
+var $elm_community$random_extra$Random$List$anyInt = A2($elm$random$Random$int, $elm$random$Random$minInt, $elm$random$Random$maxInt);
+var $elm$random$Random$map3 = F4(
+	function (func, _v0, _v1, _v2) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v3 = genA(seed0);
+				var a = _v3.a;
+				var seed1 = _v3.b;
+				var _v4 = genB(seed1);
+				var b = _v4.a;
+				var seed2 = _v4.b;
+				var _v5 = genC(seed2);
+				var c = _v5.a;
+				var seed3 = _v5.b;
+				return _Utils_Tuple2(
+					A3(func, a, b, c),
+					seed3);
+			});
+	});
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
+	function (seed0) {
+		var makeIndependentSeed = F3(
+			function (state, b, c) {
+				return $elm$random$Random$next(
+					A2($elm$random$Random$Seed, state, (1 | (b ^ c)) >>> 0));
+			});
+		var gen = A2($elm$random$Random$int, 0, 4294967295);
+		return A2(
+			$elm$random$Random$step,
+			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
+			seed0);
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $elm_community$random_extra$Random$List$shuffle = function (list) {
+	return A2(
+		$elm$random$Random$map,
+		function (independentSeed) {
+			return A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2(
+					$elm$core$List$sortBy,
+					$elm$core$Tuple$second,
+					A3(
+						$elm$core$List$foldl,
+						F2(
+							function (item, _v0) {
+								var acc = _v0.a;
+								var seed = _v0.b;
+								var _v1 = A2($elm$random$Random$step, $elm_community$random_extra$Random$List$anyInt, seed);
+								var tag = _v1.a;
+								var nextSeed = _v1.b;
+								return _Utils_Tuple2(
+									A2(
+										$elm$core$List$cons,
+										_Utils_Tuple2(item, tag),
+										acc),
+									nextSeed);
+							}),
+						_Utils_Tuple2(_List_Nil, independentSeed),
+						list).a));
+		},
+		$elm$random$Random$independentSeed);
+};
+var $author$project$Main$randomBagHelper = $elm_community$random_extra$Random$List$shuffle(
+	A2($elm$core$List$map, $author$project$Main$buildPiece, $author$project$Main$allShapes));
+var $elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
 };
 var $elm$random$Random$float = F2(
 	function (a, b) {
@@ -5792,15 +5899,53 @@ var $author$project$Main$randomPieceHelper = A2(
 		$author$project$Main$buildPiece,
 		_List_fromArray(
 			[$author$project$Main$O, $author$project$Main$T, $author$project$Main$S, $author$project$Main$Z, $author$project$Main$J, $author$project$Main$L])));
-var $author$project$Main$generateCurrentAndNextPiece = A2(
-	$elm$random$Random$generate,
-	$author$project$Main$NewGame,
-	A2($elm$random$Random$pair, $author$project$Main$randomPieceHelper, $author$project$Main$randomPieceHelper));
+var $author$project$Main$setNewGamePieces = F4(
+	function (activePiece, nextPiece, activeBag, nextBag) {
+		return {activeBag: activeBag, activePiece: activePiece, nextBag: nextBag, nextPiece: nextPiece};
+	});
+var $author$project$Main$newGameHelper = A5($elm$random$Random$map4, $author$project$Main$setNewGamePieces, $author$project$Main$randomPieceHelper, $author$project$Main$randomPieceHelper, $author$project$Main$randomBagHelper, $author$project$Main$randomBagHelper);
+var $author$project$Main$generateNewGamePieces = A2($elm$random$Random$generate, $author$project$Main$NewGame, $author$project$Main$newGameHelper);
 var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $author$project$Main$initBagTemp = A2($elm$core$List$repeat, 7, $author$project$Main$initPieceTemp);
+var $elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
 var $author$project$Main$newGame = function (windowSize) {
 	return _Utils_Tuple2(
-		{activePiece: $author$project$Main$initPieceTemp, hasAlreadySwapped: false, heldPiece: $elm$core$Maybe$Nothing, nextPiece: $author$project$Main$initPieceTemp, playfield: $author$project$Main$emptyPlayfield, windowSize: windowSize},
-		$author$project$Main$generateCurrentAndNextPiece);
+		{
+			activeBag: $author$project$Main$initBagTemp,
+			activePiece: $author$project$Main$initPieceTemp,
+			hasAlreadySwapped: false,
+			heldPiece: $elm$core$Maybe$Nothing,
+			nextBag: $author$project$Main$initBagTemp,
+			nextPieceQueue: $elm$core$List$singleton($author$project$Main$initPieceTemp),
+			numPiecesGenerated: 1,
+			playfield: $author$project$Main$emptyPlayfield,
+			windowSize: windowSize
+		},
+		$author$project$Main$generateNewGamePieces);
 };
 var $author$project$Main$init = function (flags) {
 	return $author$project$Main$newGame(
@@ -6913,10 +7058,49 @@ var $author$project$Main$clearLines = function (playfield) {
 		playfieldSubsetWithClearedLines);
 	return refreshedPlayfield;
 };
+var $author$project$Main$GenerateBag = function (a) {
+	return {$: 'GenerateBag', a: a};
+};
+var $author$project$Main$generateBag = A2($elm$random$Random$generate, $author$project$Main$GenerateBag, $author$project$Main$randomBagHelper);
 var $author$project$Main$GenerateNextPiece = function (a) {
 	return {$: 'GenerateNextPiece', a: a};
 };
 var $author$project$Main$generateNextPiece = A2($elm$random$Random$generate, $author$project$Main$GenerateNextPiece, $author$project$Main$randomPieceHelper);
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
+			A2($elm$core$List$drop, idx, xs));
+	});
 var $author$project$Main$mapPosition = F2(
 	function (fn, pos) {
 		return _Utils_update(
@@ -6947,10 +7131,6 @@ var $author$project$Main$goDown = F2(
 var $author$project$Main$positionToList = function (pos) {
 	return _List_fromArray(
 		[pos.point1, pos.point2, pos.point3, pos.point4]);
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
 };
 var $author$project$Main$isPieceAtBottom = function (model) {
 	return A2(
@@ -7112,7 +7292,7 @@ var $author$project$Main$hardDrop = function (model) {
 	var newPlayfield = A2($author$project$Main$addPieceToPlayfield, movedPiece, playfieldWithoutActivePiece);
 	return _Utils_update(
 		model,
-		{activePiece: movedPiece, hasAlreadySwapped: false, playfield: newPlayfield});
+		{activePiece: movedPiece, hasAlreadySwapped: false, numPiecesGenerated: model.numPiecesGenerated + 1, playfield: newPlayfield});
 };
 var $author$project$Main$isPieceAtTop = function (model) {
 	return A2(
@@ -7132,7 +7312,7 @@ var $author$project$Main$maybeLockPiece = function (model) {
 	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(
 		_Utils_update(
 			model,
-			{hasAlreadySwapped: false}),
+			{hasAlreadySwapped: false, numPiecesGenerated: model.numPiecesGenerated + 1}),
 		$author$project$Main$generateNextPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
@@ -7169,6 +7349,7 @@ var $author$project$Main$swap = function (model) {
 					heldPiece: $elm$core$Maybe$Just(
 						$author$project$Main$buildPiece(
 							$author$project$Main$getShape(model.activePiece))),
+					numPiecesGenerated: model.numPiecesGenerated + 1,
 					playfield: A2($author$project$Main$removePieceFromPlayfield, model.activePiece, model.playfield)
 				}),
 			$author$project$Main$generateNextPiece);
@@ -7191,6 +7372,7 @@ var $author$project$Main$swap = function (model) {
 var $author$project$Main$maybeSwap = function (model) {
 	return model.hasAlreadySwapped ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : $author$project$Main$swap(model);
 };
+var $elm$core$Basics$modBy = _Basics_modBy;
 var $elm$core$Tuple$mapBoth = F3(
 	function (funcA, funcB, _v0) {
 		var x = _v0.a;
@@ -7402,18 +7584,34 @@ var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NewGame':
-				var _v1 = msg.a;
-				var activePiece = _v1.a;
-				var nextPiece = _v1.b;
+				var activePiece = msg.a.activePiece;
+				var nextPiece = msg.a.nextPiece;
+				var activeBag = msg.a.activeBag;
+				var nextBag = msg.a.nextBag;
+				var _v1 = function () {
+					if (!activeBag.b) {
+						return _Utils_Tuple2(
+							$author$project$Main$initPieceTemp,
+							$elm$core$List$singleton($author$project$Main$initPieceTemp));
+					} else {
+						var head = activeBag.a;
+						var nextPieces_ = activeBag.b;
+						return _Utils_Tuple2(head, nextPieces_);
+					}
+				}();
+				var activePiece_ = _v1.a;
+				var nextPieces = _v1.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							activePiece: activePiece,
-							nextPiece: nextPiece,
+							activeBag: activeBag,
+							activePiece: activePiece_,
+							nextBag: nextBag,
+							nextPieceQueue: nextPieces,
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
-								activePiece,
+								activePiece_,
 								$author$project$Main$clearLines(model.playfield))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7440,18 +7638,51 @@ var $author$project$Main$update = F2(
 			case 'Swap':
 				return $author$project$Main$maybeSwap(model);
 			case 'GenerateNextPiece':
-				var newNextPiece = msg.a;
+				var pieceToPushToQueue = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Main$initPieceTemp,
+					A2(
+						$elm_community$list_extra$List$Extra$getAt,
+						A2($elm$core$Basics$modBy, 7, model.numPiecesGenerated - 2),
+						model.nextBag));
+				var cmd = (!A2($elm$core$Basics$modBy, 7, model.numPiecesGenerated - 1)) ? $author$project$Main$generateBag : $elm$core$Platform$Cmd$none;
+				var _v3 = function () {
+					var _v4 = model.nextPieceQueue;
+					if (!_v4.b) {
+						return _Utils_Tuple2(
+							$author$project$Main$initPieceTemp,
+							$elm$core$List$singleton($author$project$Main$initPieceTemp));
+					} else {
+						var nextPiece_ = _v4.a;
+						var nextNextPieces_ = _v4.b;
+						return _Utils_Tuple2(nextPiece_, nextNextPieces_);
+					}
+				}();
+				var nextPiece = _v3.a;
+				var nextNextPieces = _v3.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							activePiece: model.nextPiece,
-							nextPiece: newNextPiece,
+							activePiece: nextPiece,
+							nextPieceQueue: _Utils_ap(
+								nextNextPieces,
+								_List_fromArray(
+									[pieceToPushToQueue])),
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
-								model.nextPiece,
+								nextPiece,
 								$author$project$Main$clearLines(model.playfield))
 						}),
+					cmd);
+			case 'Temp':
+				return _Utils_Tuple2(model, $author$project$Main$generateBag);
+			case 'GenerateBag':
+				var pieces = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{activeBag: model.nextBag, nextBag: pieces}),
 					$elm$core$Platform$Cmd$none);
 			case 'Tick':
 				var time = msg.a;
@@ -7998,6 +8229,15 @@ var $author$project$Main$showPlayfield = F2(
 			A2($author$project$Main$showLines, size, playfield));
 	});
 var $author$project$Main$view = function (model) {
+	var nextPiece = function () {
+		var _v0 = model.nextPieceQueue;
+		if (!_v0.b) {
+			return $author$project$Main$initPieceTemp;
+		} else {
+			var nextPiece_ = _v0.a;
+			return nextPiece_;
+		}
+	}();
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8012,7 +8252,7 @@ var $author$project$Main$view = function (model) {
 			[
 				A2($author$project$Main$showHeldPiece, model.windowSize, model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
-				A2($author$project$Main$showNextPiece, model.windowSize, model.nextPiece),
+				A2($author$project$Main$showNextPiece, model.windowSize, nextPiece),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };
