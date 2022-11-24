@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Json.Decode
 import List.Extra
+import List.Nonempty exposing (Nonempty(..))
 import Random
 import Random.List
 import Svg
@@ -29,11 +30,9 @@ main =
 
 type alias Model =
     { activePiece : Piece
-    , nextPieceQueue : List Piece
+    , nextPieceQueue : Nonempty Piece
     , heldPiece : Maybe Piece
     , numPiecesGenerated : Int
-    , activeBag : Bag
-    , nextBag : Bag
     , hasAlreadySwapped : Bool
     , playfield : Playfield
     , windowSize : WindowSize
@@ -81,10 +80,6 @@ type MoveDirection
     | Down
 
 
-type alias Bag =
-    List Piece
-
-
 type alias Playfield =
     Array (Array Space)
 
@@ -119,16 +114,14 @@ init flags =
 
 
 type Msg
-    = NewGame NewGamePieces
+    = NewGame (Nonempty Piece)
     | MoveLeft
     | MoveRight
     | SoftDrop
     | HardDrop
     | Rotate RotationDirection
     | Swap
-    | GenerateNextPiece Piece
-    | GenerateBag (List Piece)
-    | Temp
+    | GenerateBag (Nonempty Piece)
     | Tick Time.Posix
     | GotResizedWindow WindowSize
     | NoOp
@@ -137,22 +130,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewGame { activePiece, nextPiece, activeBag, nextBag } ->
-            let
-                ( activePiece_, nextPieces ) =
-                    case activeBag of
-                        [] ->
-                            ( initPieceTemp, List.singleton initPieceTemp )
-
-                        head :: nextPieces_ ->
-                            ( head, nextPieces_ )
-            in
+        NewGame pieces ->
             ( { model
-                | playfield = addPieceToPlayfield activePiece_ (clearLines model.playfield)
-                , activePiece = activePiece_
-                , nextPieceQueue = nextPieces
-                , activeBag = activeBag
-                , nextBag = nextBag
+                | playfield = addPieceToPlayfield (List.Nonempty.head pieces) (clearLines model.playfield)
+                , activePiece = List.Nonempty.head pieces
+                , nextPieceQueue = List.Nonempty.pop pieces
               }
             , Cmd.none
             )
@@ -167,7 +149,7 @@ update msg model =
             maybeLockPiece (maybeRefreshPlayfield model Down)
 
         HardDrop ->
-            ( hardDrop model, generateNextPiece )
+            generateNextPiece (hardDrop model)
 
         Rotate direction ->
             ( rotate direction model, Cmd.none )
@@ -175,40 +157,8 @@ update msg model =
         Swap ->
             maybeSwap model
 
-        GenerateNextPiece _ ->
-            let
-                ( nextPiece, nextNextPieces ) =
-                    case model.nextPieceQueue of
-                        [] ->
-                            ( initPieceTemp, List.singleton initPieceTemp )
-
-                        nextPiece_ :: nextNextPieces_ ->
-                            ( nextPiece_, nextNextPieces_ )
-
-                pieceToPushToQueue =
-                    List.Extra.getAt (modBy 7 (model.numPiecesGenerated - 2)) model.nextBag
-                        |> Maybe.withDefault initPieceTemp
-
-                cmd =
-                    if modBy 7 (model.numPiecesGenerated - 1) == 0 then
-                        generateBag
-
-                    else
-                        Cmd.none
-            in
-            ( { model
-                | playfield = addPieceToPlayfield nextPiece (clearLines model.playfield)
-                , activePiece = nextPiece
-                , nextPieceQueue = nextNextPieces ++ [ pieceToPushToQueue ]
-              }
-            , cmd
-            )
-
-        Temp ->
-            ( model, generateBag )
-
         GenerateBag pieces ->
-            ( { model | activeBag = model.nextBag, nextBag = pieces }, Cmd.none )
+            ( { model | nextPieceQueue = List.Nonempty.append model.nextPieceQueue pieces }, Cmd.none )
 
         Tick time ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
@@ -578,14 +528,13 @@ swap : Model -> ( Model, Cmd Msg )
 swap model =
     case model.heldPiece of
         Nothing ->
-            ( { model
-                | heldPiece = Just (buildPiece (getShape model.activePiece))
-                , hasAlreadySwapped = True
-                , numPiecesGenerated = model.numPiecesGenerated + 1
-                , playfield = removePieceFromPlayfield model.activePiece model.playfield
-              }
-            , generateNextPiece
-            )
+            generateNextPiece
+                { model
+                    | heldPiece = Just (buildPiece (getShape model.activePiece))
+                    , hasAlreadySwapped = True
+                    , numPiecesGenerated = model.numPiecesGenerated + 1
+                    , playfield = removePieceFromPlayfield model.activePiece model.playfield
+                }
 
         Just heldPiece ->
             ( { model
@@ -635,12 +584,11 @@ maybeLockPiece model =
         newGame model.windowSize
 
     else if isPieceStuck model then
-        ( { model
-            | hasAlreadySwapped = False
-            , numPiecesGenerated = model.numPiecesGenerated + 1
-          }
-        , generateNextPiece
-        )
+        generateNextPiece
+            { model
+                | hasAlreadySwapped = False
+                , numPiecesGenerated = model.numPiecesGenerated + 1
+            }
 
     else
         ( model, Cmd.none )
@@ -649,22 +597,15 @@ maybeLockPiece model =
 newGame : WindowSize -> ( Model, Cmd Msg )
 newGame windowSize =
     ( { activePiece = initPieceTemp
-      , nextPieceQueue = List.singleton initPieceTemp
+      , nextPieceQueue = List.Nonempty.singleton initPieceTemp
       , heldPiece = Nothing
       , numPiecesGenerated = 1
-      , activeBag = initBagTemp
-      , nextBag = initBagTemp
       , hasAlreadySwapped = False
       , playfield = emptyPlayfield
       , windowSize = windowSize
       }
     , generateNewGamePieces
     )
-
-
-initBagTemp : Bag
-initBagTemp =
-    List.repeat 7 initPieceTemp
 
 
 isLineFilled : Array Space -> Bool
@@ -794,23 +735,60 @@ getShape (Piece shape _ _) =
     shape
 
 
-randomPieceHelper : Random.Generator Piece
-randomPieceHelper =
-    Random.uniform (buildPiece I) (List.map buildPiece [ O, T, S, Z, J, L ])
+generateNextPiece : Model -> ( Model, Cmd Msg )
+generateNextPiece model =
+    ( { model
+        | playfield = addPieceToPlayfield (List.Nonempty.head model.nextPieceQueue) (clearLines model.playfield)
+        , activePiece = List.Nonempty.head model.nextPieceQueue
+        , nextPieceQueue = List.Nonempty.pop model.nextPieceQueue
+      }
+    , maybeQueueMorePieces model.numPiecesGenerated
+    )
 
 
-generateNextPiece : Cmd Msg
-generateNextPiece =
-    Random.generate GenerateNextPiece randomPieceHelper
+{-| Lazily generates [a random "bag"](https://harddrop.com/wiki/Bag) of pieces every so often,
+and appends them to the nextPieceQueue to prevent the well from running dry.
+-}
+maybeQueueMorePieces : Int -> Cmd Msg
+maybeQueueMorePieces numPiecesGenerated =
+    if modBy (List.length allShapes) (numPiecesGenerated - 1) == 0 then
+        generateBag
+
+    else
+        Cmd.none
 
 
-newGameHelper : Random.Generator NewGamePieces
+popPieceTemp : List Piece -> ( Piece, List Piece )
+popPieceTemp pieces =
+    case pieces of
+        [] ->
+            ( initPieceTemp, [] )
+
+        head :: tail ->
+            ( head, tail )
+
+
+randomBagHelper : Random.Generator (Nonempty Piece)
+randomBagHelper =
+    Random.List.shuffle (List.map buildPiece allShapes)
+        |> Random.map piecesToNonempty
+
+
+generateBag : Cmd Msg
+generateBag =
+    Random.generate GenerateBag randomBagHelper
+
+
+newGameHelper : Random.Generator (Nonempty Piece)
 newGameHelper =
-    Random.map4 setNewGamePieces
-        randomPieceHelper
-        randomPieceHelper
-        randomBagHelper
-        randomBagHelper
+    Random.map2 List.Nonempty.append randomBagHelper randomBagHelper
+
+
+piecesToNonempty : List Piece -> Nonempty Piece
+piecesToNonempty pieces =
+    pieces
+        |> List.Nonempty.fromList
+        |> Maybe.withDefault (Nonempty (buildPiece I) (List.map buildPiece (List.drop 1 allShapes)))
 
 
 generateNewGamePieces : Cmd Msg
@@ -818,36 +796,9 @@ generateNewGamePieces =
     Random.generate NewGame newGameHelper
 
 
-type alias NewGamePieces =
-    { activePiece : Piece
-    , nextPiece : Piece
-    , activeBag : Bag
-    , nextBag : Bag
-    }
-
-
-setNewGamePieces : Piece -> Piece -> List Piece -> List Piece -> NewGamePieces
-setNewGamePieces activePiece nextPiece activeBag nextBag =
-    { activePiece = activePiece
-    , nextPiece = nextPiece
-    , activeBag = activeBag
-    , nextBag = nextBag
-    }
-
-
 allShapes : List Shape
 allShapes =
     [ I, O, T, S, Z, J, L ]
-
-
-randomBagHelper : Random.Generator (List Piece)
-randomBagHelper =
-    Random.List.shuffle (List.map buildPiece allShapes)
-
-
-generateBag : Cmd Msg
-generateBag =
-    Random.generate GenerateBag randomBagHelper
 
 
 initPieceTemp : Piece
@@ -1019,19 +970,10 @@ updateSpaceOnPlayfield newSpace ( x, y ) playfield =
 
 view : Model -> Html Msg
 view model =
-    let
-        nextPiece =
-            case model.nextPieceQueue of
-                [] ->
-                    initPieceTemp
-
-                nextPiece_ :: _ ->
-                    nextPiece_
-    in
     div [ class (.mainClass (getStyleConfig model.windowSize)) ]
         [ showHeldPiece model.windowSize model.heldPiece
         , showPlayfield model.windowSize model.playfield
-        , showNextPiece model.windowSize nextPiece
+        , showNextPiece model.windowSize (List.Nonempty.head model.nextPieceQueue)
         , showControls model.windowSize
         ]
 
@@ -1295,7 +1237,6 @@ subscriptions _ =
 
 
 {-
-   TODO Fix piece randomizing to be more like Tetris Guideline
    TODO Show next 5 pieces
    TODO Either kick tables or T-spins
    TODO Either kick tables or T-spins

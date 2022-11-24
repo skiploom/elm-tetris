@@ -5398,29 +5398,38 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
-var $elm$random$Random$map4 = F5(
-	function (func, _v0, _v1, _v2, _v3) {
+var $mgold$elm_nonempty_list$List$Nonempty$Nonempty = F2(
+	function (a, b) {
+		return {$: 'Nonempty', a: a, b: b};
+	});
+var $mgold$elm_nonempty_list$List$Nonempty$append = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var xs = _v0.b;
+		var y = _v1.a;
+		var ys = _v1.b;
+		return A2(
+			$mgold$elm_nonempty_list$List$Nonempty$Nonempty,
+			x,
+			_Utils_ap(
+				xs,
+				A2($elm$core$List$cons, y, ys)));
+	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
 		var genA = _v0.a;
 		var genB = _v1.a;
-		var genC = _v2.a;
-		var genD = _v3.a;
 		return $elm$random$Random$Generator(
 			function (seed0) {
-				var _v4 = genA(seed0);
-				var a = _v4.a;
-				var seed1 = _v4.b;
-				var _v5 = genB(seed1);
-				var b = _v5.a;
-				var seed2 = _v5.b;
-				var _v6 = genC(seed2);
-				var c = _v6.a;
-				var seed3 = _v6.b;
-				var _v7 = genD(seed3);
-				var d = _v7.a;
-				var seed4 = _v7.b;
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
 				return _Utils_Tuple2(
-					A4(func, a, b, c, d),
-					seed4);
+					A2(func, a, b),
+					seed2);
 			});
 	});
 var $author$project$Main$I = {$: 'I'};
@@ -5703,6 +5712,58 @@ var $author$project$Main$buildPiece = function (shape) {
 		$author$project$Main$initialPosition(shape),
 		$author$project$Main$initialRotationState);
 };
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $mgold$elm_nonempty_list$List$Nonempty$fromList = function (ys) {
+	if (ys.b) {
+		var x = ys.a;
+		var xs = ys.b;
+		return $elm$core$Maybe$Just(
+			A2($mgold$elm_nonempty_list$List$Nonempty$Nonempty, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Main$piecesToNonempty = function (pieces) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		A2(
+			$mgold$elm_nonempty_list$List$Nonempty$Nonempty,
+			$author$project$Main$buildPiece($author$project$Main$I),
+			A2(
+				$elm$core$List$map,
+				$author$project$Main$buildPiece,
+				A2($elm$core$List$drop, 1, $author$project$Main$allShapes))),
+		$mgold$elm_nonempty_list$List$Nonempty$fromList(pieces));
+};
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$xor = _Bitwise_xor;
 var $elm$random$Random$peel = function (_v0) {
@@ -5816,131 +5877,24 @@ var $elm_community$random_extra$Random$List$shuffle = function (list) {
 		},
 		$elm$random$Random$independentSeed);
 };
-var $author$project$Main$randomBagHelper = $elm_community$random_extra$Random$List$shuffle(
-	A2($elm$core$List$map, $author$project$Main$buildPiece, $author$project$Main$allShapes));
-var $elm$random$Random$addOne = function (value) {
-	return _Utils_Tuple2(1, value);
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$random$Random$float = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var seed1 = $elm$random$Random$next(seed0);
-				var range = $elm$core$Basics$abs(b - a);
-				var n1 = $elm$random$Random$peel(seed1);
-				var n0 = $elm$random$Random$peel(seed0);
-				var lo = (134217727 & n1) * 1.0;
-				var hi = (67108863 & n0) * 1.0;
-				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
-				var scaled = (val * range) + a;
-				return _Utils_Tuple2(
-					scaled,
-					$elm$random$Random$next(seed1));
-			});
-	});
-var $elm$random$Random$getByWeight = F3(
-	function (_v0, others, countdown) {
-		getByWeight:
-		while (true) {
-			var weight = _v0.a;
-			var value = _v0.b;
-			if (!others.b) {
-				return value;
-			} else {
-				var second = others.a;
-				var otherOthers = others.b;
-				if (_Utils_cmp(
-					countdown,
-					$elm$core$Basics$abs(weight)) < 1) {
-					return value;
-				} else {
-					var $temp$_v0 = second,
-						$temp$others = otherOthers,
-						$temp$countdown = countdown - $elm$core$Basics$abs(weight);
-					_v0 = $temp$_v0;
-					others = $temp$others;
-					countdown = $temp$countdown;
-					continue getByWeight;
-				}
-			}
-		}
-	});
-var $elm$core$List$sum = function (numbers) {
-	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
-};
-var $elm$random$Random$weighted = F2(
-	function (first, others) {
-		var normalize = function (_v0) {
-			var weight = _v0.a;
-			return $elm$core$Basics$abs(weight);
-		};
-		var total = normalize(first) + $elm$core$List$sum(
-			A2($elm$core$List$map, normalize, others));
-		return A2(
-			$elm$random$Random$map,
-			A2($elm$random$Random$getByWeight, first, others),
-			A2($elm$random$Random$float, 0, total));
-	});
-var $elm$random$Random$uniform = F2(
-	function (value, valueList) {
-		return A2(
-			$elm$random$Random$weighted,
-			$elm$random$Random$addOne(value),
-			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
-	});
-var $author$project$Main$randomPieceHelper = A2(
-	$elm$random$Random$uniform,
-	$author$project$Main$buildPiece($author$project$Main$I),
-	A2(
-		$elm$core$List$map,
-		$author$project$Main$buildPiece,
-		_List_fromArray(
-			[$author$project$Main$O, $author$project$Main$T, $author$project$Main$S, $author$project$Main$Z, $author$project$Main$J, $author$project$Main$L])));
-var $author$project$Main$setNewGamePieces = F4(
-	function (activePiece, nextPiece, activeBag, nextBag) {
-		return {activeBag: activeBag, activePiece: activePiece, nextBag: nextBag, nextPiece: nextPiece};
-	});
-var $author$project$Main$newGameHelper = A5($elm$random$Random$map4, $author$project$Main$setNewGamePieces, $author$project$Main$randomPieceHelper, $author$project$Main$randomPieceHelper, $author$project$Main$randomBagHelper, $author$project$Main$randomBagHelper);
+var $author$project$Main$randomBagHelper = A2(
+	$elm$random$Random$map,
+	$author$project$Main$piecesToNonempty,
+	$elm_community$random_extra$Random$List$shuffle(
+		A2($elm$core$List$map, $author$project$Main$buildPiece, $author$project$Main$allShapes)));
+var $author$project$Main$newGameHelper = A3($elm$random$Random$map2, $mgold$elm_nonempty_list$List$Nonempty$append, $author$project$Main$randomBagHelper, $author$project$Main$randomBagHelper);
 var $author$project$Main$generateNewGamePieces = A2($elm$random$Random$generate, $author$project$Main$NewGame, $author$project$Main$newGameHelper);
 var $author$project$Main$initPieceTemp = $author$project$Main$buildPiece($author$project$Main$O);
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var $author$project$Main$initBagTemp = A2($elm$core$List$repeat, 7, $author$project$Main$initPieceTemp);
-var $elm$core$List$singleton = function (value) {
-	return _List_fromArray(
-		[value]);
+var $mgold$elm_nonempty_list$List$Nonempty$singleton = function (x) {
+	return A2($mgold$elm_nonempty_list$List$Nonempty$Nonempty, x, _List_Nil);
 };
 var $author$project$Main$newGame = function (windowSize) {
 	return _Utils_Tuple2(
 		{
-			activeBag: $author$project$Main$initBagTemp,
 			activePiece: $author$project$Main$initPieceTemp,
 			hasAlreadySwapped: false,
 			heldPiece: $elm$core$Maybe$Nothing,
-			nextBag: $author$project$Main$initBagTemp,
-			nextPieceQueue: $elm$core$List$singleton($author$project$Main$initPieceTemp),
+			nextPieceQueue: $mgold$elm_nonempty_list$List$Nonempty$singleton($author$project$Main$initPieceTemp),
 			numPiecesGenerated: 1,
 			playfield: $author$project$Main$emptyPlayfield,
 			windowSize: windowSize
@@ -6730,15 +6684,6 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Main$updateSpaceOnPlayfield = F3(
 	function (newSpace, _v0, playfield) {
 		var x = _v0.a;
@@ -7058,49 +7003,49 @@ var $author$project$Main$clearLines = function (playfield) {
 		playfieldSubsetWithClearedLines);
 	return refreshedPlayfield;
 };
+var $mgold$elm_nonempty_list$List$Nonempty$head = function (_v0) {
+	var x = _v0.a;
+	var xs = _v0.b;
+	return x;
+};
 var $author$project$Main$GenerateBag = function (a) {
 	return {$: 'GenerateBag', a: a};
 };
 var $author$project$Main$generateBag = A2($elm$random$Random$generate, $author$project$Main$GenerateBag, $author$project$Main$randomBagHelper);
-var $author$project$Main$GenerateNextPiece = function (a) {
-	return {$: 'GenerateNextPiece', a: a};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$maybeQueueMorePieces = function (numPiecesGenerated) {
+	return (!A2(
+		$elm$core$Basics$modBy,
+		$elm$core$List$length($author$project$Main$allShapes),
+		numPiecesGenerated - 1)) ? $author$project$Main$generateBag : $elm$core$Platform$Cmd$none;
 };
-var $author$project$Main$generateNextPiece = A2($elm$random$Random$generate, $author$project$Main$GenerateNextPiece, $author$project$Main$randomPieceHelper);
-var $elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
+var $mgold$elm_nonempty_list$List$Nonempty$pop = function (_v0) {
+	var x = _v0.a;
+	var xs = _v0.b;
+	if (!xs.b) {
+		return A2($mgold$elm_nonempty_list$List$Nonempty$Nonempty, x, xs);
 	} else {
-		return $elm$core$Maybe$Nothing;
+		var y = xs.a;
+		var ys = xs.b;
+		return A2($mgold$elm_nonempty_list$List$Nonempty$Nonempty, y, ys);
 	}
 };
-var $elm_community$list_extra$List$Extra$getAt = F2(
-	function (idx, xs) {
-		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
-			A2($elm$core$List$drop, idx, xs));
-	});
+var $author$project$Main$generateNextPiece = function (model) {
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{
+				activePiece: $mgold$elm_nonempty_list$List$Nonempty$head(model.nextPieceQueue),
+				nextPieceQueue: $mgold$elm_nonempty_list$List$Nonempty$pop(model.nextPieceQueue),
+				playfield: A2(
+					$author$project$Main$addPieceToPlayfield,
+					$mgold$elm_nonempty_list$List$Nonempty$head(model.nextPieceQueue),
+					$author$project$Main$clearLines(model.playfield))
+			}),
+		$author$project$Main$maybeQueueMorePieces(model.numPiecesGenerated));
+};
 var $author$project$Main$mapPosition = F2(
 	function (fn, pos) {
 		return _Utils_update(
@@ -7306,14 +7251,11 @@ var $author$project$Main$isPieceAtTop = function (model) {
 var $author$project$Main$isToppedOut = function (model) {
 	return $author$project$Main$isPieceAtTop(model) && $author$project$Main$isPieceStuck(model);
 };
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$maybeLockPiece = function (model) {
-	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? _Utils_Tuple2(
+	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? $author$project$Main$generateNextPiece(
 		_Utils_update(
 			model,
-			{hasAlreadySwapped: false, numPiecesGenerated: model.numPiecesGenerated + 1}),
-		$author$project$Main$generateNextPiece) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+			{hasAlreadySwapped: false, numPiecesGenerated: model.numPiecesGenerated + 1})) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
 	function (oldPiece, newPiece_, playfield) {
@@ -7341,7 +7283,7 @@ var $author$project$Main$getShape = function (_v0) {
 var $author$project$Main$swap = function (model) {
 	var _v0 = model.heldPiece;
 	if (_v0.$ === 'Nothing') {
-		return _Utils_Tuple2(
+		return $author$project$Main$generateNextPiece(
 			_Utils_update(
 				model,
 				{
@@ -7351,8 +7293,7 @@ var $author$project$Main$swap = function (model) {
 							$author$project$Main$getShape(model.activePiece))),
 					numPiecesGenerated: model.numPiecesGenerated + 1,
 					playfield: A2($author$project$Main$removePieceFromPlayfield, model.activePiece, model.playfield)
-				}),
-			$author$project$Main$generateNextPiece);
+				}));
 	} else {
 		var heldPiece = _v0.a;
 		return _Utils_Tuple2(
@@ -7372,7 +7313,6 @@ var $author$project$Main$swap = function (model) {
 var $author$project$Main$maybeSwap = function (model) {
 	return model.hasAlreadySwapped ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : $author$project$Main$swap(model);
 };
-var $elm$core$Basics$modBy = _Basics_modBy;
 var $elm$core$Tuple$mapBoth = F3(
 	function (funcA, funcB, _v0) {
 		var x = _v0.a;
@@ -7584,34 +7524,16 @@ var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NewGame':
-				var activePiece = msg.a.activePiece;
-				var nextPiece = msg.a.nextPiece;
-				var activeBag = msg.a.activeBag;
-				var nextBag = msg.a.nextBag;
-				var _v1 = function () {
-					if (!activeBag.b) {
-						return _Utils_Tuple2(
-							$author$project$Main$initPieceTemp,
-							$elm$core$List$singleton($author$project$Main$initPieceTemp));
-					} else {
-						var head = activeBag.a;
-						var nextPieces_ = activeBag.b;
-						return _Utils_Tuple2(head, nextPieces_);
-					}
-				}();
-				var activePiece_ = _v1.a;
-				var nextPieces = _v1.b;
+				var pieces = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							activeBag: activeBag,
-							activePiece: activePiece_,
-							nextBag: nextBag,
-							nextPieceQueue: nextPieces,
+							activePiece: $mgold$elm_nonempty_list$List$Nonempty$head(pieces),
+							nextPieceQueue: $mgold$elm_nonempty_list$List$Nonempty$pop(pieces),
 							playfield: A2(
 								$author$project$Main$addPieceToPlayfield,
-								activePiece_,
+								$mgold$elm_nonempty_list$List$Nonempty$head(pieces),
 								$author$project$Main$clearLines(model.playfield))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7627,9 +7549,8 @@ var $author$project$Main$update = F2(
 				return $author$project$Main$maybeLockPiece(
 					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Down));
 			case 'HardDrop':
-				return _Utils_Tuple2(
-					$author$project$Main$hardDrop(model),
-					$author$project$Main$generateNextPiece);
+				return $author$project$Main$generateNextPiece(
+					$author$project$Main$hardDrop(model));
 			case 'Rotate':
 				var direction = msg.a;
 				return _Utils_Tuple2(
@@ -7637,52 +7558,14 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'Swap':
 				return $author$project$Main$maybeSwap(model);
-			case 'GenerateNextPiece':
-				var pieceToPushToQueue = A2(
-					$elm$core$Maybe$withDefault,
-					$author$project$Main$initPieceTemp,
-					A2(
-						$elm_community$list_extra$List$Extra$getAt,
-						A2($elm$core$Basics$modBy, 7, model.numPiecesGenerated - 2),
-						model.nextBag));
-				var cmd = (!A2($elm$core$Basics$modBy, 7, model.numPiecesGenerated - 1)) ? $author$project$Main$generateBag : $elm$core$Platform$Cmd$none;
-				var _v3 = function () {
-					var _v4 = model.nextPieceQueue;
-					if (!_v4.b) {
-						return _Utils_Tuple2(
-							$author$project$Main$initPieceTemp,
-							$elm$core$List$singleton($author$project$Main$initPieceTemp));
-					} else {
-						var nextPiece_ = _v4.a;
-						var nextNextPieces_ = _v4.b;
-						return _Utils_Tuple2(nextPiece_, nextNextPieces_);
-					}
-				}();
-				var nextPiece = _v3.a;
-				var nextNextPieces = _v3.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							activePiece: nextPiece,
-							nextPieceQueue: _Utils_ap(
-								nextNextPieces,
-								_List_fromArray(
-									[pieceToPushToQueue])),
-							playfield: A2(
-								$author$project$Main$addPieceToPlayfield,
-								nextPiece,
-								$author$project$Main$clearLines(model.playfield))
-						}),
-					cmd);
-			case 'Temp':
-				return _Utils_Tuple2(model, $author$project$Main$generateBag);
 			case 'GenerateBag':
 				var pieces = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{activeBag: model.nextBag, nextBag: pieces}),
+						{
+							nextPieceQueue: A2($mgold$elm_nonempty_list$List$Nonempty$append, model.nextPieceQueue, pieces)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Tick':
 				var time = msg.a;
@@ -8229,15 +8112,6 @@ var $author$project$Main$showPlayfield = F2(
 			A2($author$project$Main$showLines, size, playfield));
 	});
 var $author$project$Main$view = function (model) {
-	var nextPiece = function () {
-		var _v0 = model.nextPieceQueue;
-		if (!_v0.b) {
-			return $author$project$Main$initPieceTemp;
-		} else {
-			var nextPiece_ = _v0.a;
-			return nextPiece_;
-		}
-	}();
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8252,7 +8126,10 @@ var $author$project$Main$view = function (model) {
 			[
 				A2($author$project$Main$showHeldPiece, model.windowSize, model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
-				A2($author$project$Main$showNextPiece, model.windowSize, nextPiece),
+				A2(
+				$author$project$Main$showNextPiece,
+				model.windowSize,
+				$mgold$elm_nonempty_list$List$Nonempty$head(model.nextPieceQueue)),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };
