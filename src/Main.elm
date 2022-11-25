@@ -1253,9 +1253,11 @@ subscriptions _ =
 
 
 {-
-   TODO Show next 5 pieces
-   TODO Either kick tables or T-spins
-   TODO Either kick tables or T-spins
-   TODO Fix tucks (probably somnething to do with Tick and locking logic)
-
+   TODO Fix lockPiece and Tick logic, so there is time to move a piece left or right when it's at the bottom (i.e. so Tucks are possible)
+   TODO Implement T-Spins
+   TODO Implement Wall Kicks for one piece
+   TODO Implement Wall Kicks for remaining pieces
+   TODO Display number of lines cleared
+   TODO Add leveling system
+   TODO Add scoring
 -}
