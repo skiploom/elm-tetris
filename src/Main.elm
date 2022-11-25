@@ -758,16 +758,6 @@ maybeQueueMorePieces numPiecesGenerated =
         Cmd.none
 
 
-popPieceTemp : List Piece -> ( Piece, List Piece )
-popPieceTemp pieces =
-    case pieces of
-        [] ->
-            ( initPieceTemp, [] )
-
-        head :: tail ->
-            ( head, tail )
-
-
 randomBagHelper : Random.Generator (Nonempty Piece)
 randomBagHelper =
     Random.List.shuffle (List.map buildPiece allShapes)
@@ -973,7 +963,7 @@ view model =
     div [ class (.mainClass (getStyleConfig model.windowSize)) ]
         [ showHeldPiece model.windowSize model.heldPiece
         , showPlayfield model.windowSize model.playfield
-        , showNextPiece model.windowSize (List.Nonempty.head model.nextPieceQueue)
+        , showNextPieces model.windowSize model.nextPieceQueue
         , showControls model.windowSize
         ]
 
@@ -1083,12 +1073,38 @@ spaceToColor space =
             "#212121"
 
 
-showNextPiece : WindowSize -> Piece -> Html Msg
-showNextPiece size piece =
-    div [ class (.previewClass (getStyleConfig size)), class "piece-preview--next" ]
-        [ text "next"
+showNextPieces : WindowSize -> Nonempty Piece -> Html Msg
+showNextPieces size pieces =
+    div [ class "piece-previews" ]
+        (List.Nonempty.toList
+            (List.Nonempty.indexedMap (showNextPiece size) (List.Nonempty.take 5 pieces))
+        )
+
+
+showNextPiece : WindowSize -> Int -> Piece -> Html Msg
+showNextPiece size index piece =
+    div (showNextPieceClasses size index)
+        [ showNextPieceHeader index
         , showMiniPiece size (getShape piece)
         ]
+
+
+showNextPieceClasses : WindowSize -> Int -> List (Html.Attribute Msg)
+showNextPieceClasses size index =
+    if index == 0 then
+        [ class (.previewClass (getStyleConfig size)), class "piece-preview--next" ]
+
+    else
+        [ class (.previewClass (getStyleConfig size)), class "piece-preview--later" ]
+
+
+showNextPieceHeader : Int -> Html Msg
+showNextPieceHeader index =
+    if index == 0 then
+        text "next"
+
+    else
+        text ""
 
 
 showControls : WindowSize -> Html Msg

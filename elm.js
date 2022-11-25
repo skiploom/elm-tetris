@@ -7985,27 +7985,209 @@ var $author$project$Main$showHeldPiece = F2(
 					preview
 				]));
 	});
-var $author$project$Main$showNextPiece = F2(
-	function (size, piece) {
+var $mgold$elm_nonempty_list$List$Nonempty$indexedMap = F2(
+	function (f, _v0) {
+		var x = _v0.a;
+		var xs = _v0.b;
+		var wrapped = F2(
+			function (i, d) {
+				return A2(f, i + 1, d);
+			});
+		return A2(
+			$mgold$elm_nonempty_list$List$Nonempty$Nonempty,
+			A2(f, 0, x),
+			A2($elm$core$List$indexedMap, wrapped, xs));
+	});
+var $author$project$Main$showNextPieceClasses = F2(
+	function (size, index) {
+		return (!index) ? _List_fromArray(
+			[
+				$elm$html$Html$Attributes$class(
+				function ($) {
+					return $.previewClass;
+				}(
+					$author$project$Main$getStyleConfig(size))),
+				$elm$html$Html$Attributes$class('piece-preview--next')
+			]) : _List_fromArray(
+			[
+				$elm$html$Html$Attributes$class(
+				function ($) {
+					return $.previewClass;
+				}(
+					$author$project$Main$getStyleConfig(size))),
+				$elm$html$Html$Attributes$class('piece-preview--later')
+			]);
+	});
+var $author$project$Main$showNextPieceHeader = function (index) {
+	return (!index) ? $elm$html$Html$text('next') : $elm$html$Html$text('');
+};
+var $author$project$Main$showNextPiece = F3(
+	function (size, index, piece) {
 		return A2(
 			$elm$html$Html$div,
+			A2($author$project$Main$showNextPieceClasses, size, index),
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class(
-					function ($) {
-						return $.previewClass;
-					}(
-						$author$project$Main$getStyleConfig(size))),
-					$elm$html$Html$Attributes$class('piece-preview--next')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('next'),
+					$author$project$Main$showNextPieceHeader(index),
 					A2(
 					$author$project$Main$showMiniPiece,
 					size,
 					$author$project$Main$getShape(piece))
 				]));
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $mgold$elm_nonempty_list$List$Nonempty$take = F2(
+	function (n, _v0) {
+		var x = _v0.a;
+		var xs = _v0.b;
+		return A2(
+			$mgold$elm_nonempty_list$List$Nonempty$Nonempty,
+			x,
+			A2($elm$core$List$take, n - 1, xs));
+	});
+var $mgold$elm_nonempty_list$List$Nonempty$toList = function (_v0) {
+	var x = _v0.a;
+	var xs = _v0.b;
+	return A2($elm$core$List$cons, x, xs);
+};
+var $author$project$Main$showNextPieces = F2(
+	function (size, pieces) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('piece-previews')
+				]),
+			$mgold$elm_nonempty_list$List$Nonempty$toList(
+				A2(
+					$mgold$elm_nonempty_list$List$Nonempty$indexedMap,
+					$author$project$Main$showNextPiece(size),
+					A2($mgold$elm_nonempty_list$List$Nonempty$take, 5, pieces))));
 	});
 var $elm$core$Elm$JsArray$map = _JsArray_map;
 var $elm$core$Array$map = F2(
@@ -8126,10 +8308,7 @@ var $author$project$Main$view = function (model) {
 			[
 				A2($author$project$Main$showHeldPiece, model.windowSize, model.heldPiece),
 				A2($author$project$Main$showPlayfield, model.windowSize, model.playfield),
-				A2(
-				$author$project$Main$showNextPiece,
-				model.windowSize,
-				$mgold$elm_nonempty_list$List$Nonempty$head(model.nextPieceQueue)),
+				A2($author$project$Main$showNextPieces, model.windowSize, model.nextPieceQueue),
 				$author$project$Main$showControls(model.windowSize)
 			]));
 };
