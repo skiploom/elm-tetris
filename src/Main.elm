@@ -34,6 +34,7 @@ type alias Model =
     , heldPiece : Maybe Piece
     , numPiecesGenerated : Int
     , hasAlreadySwapped : Bool
+    , hasAlreadyWaitedBeforeLockingPiece : Bool
     , playfield : Playfield
     , windowSize : WindowSize
     }
@@ -146,7 +147,7 @@ update msg model =
             ( maybeRefreshPlayfield model Right, Cmd.none )
 
         SoftDrop ->
-            maybeLockPiece (maybeRefreshPlayfield model Down)
+            ( maybeRefreshPlayfield model Down, Cmd.none )
 
         HardDrop ->
             generateNextPiece (hardDrop model)
@@ -584,11 +585,16 @@ maybeLockPiece model =
         newGame model.windowSize
 
     else if isPieceStuck model then
-        generateNextPiece
-            { model
-                | hasAlreadySwapped = False
-                , numPiecesGenerated = model.numPiecesGenerated + 1
-            }
+        if model.hasAlreadyWaitedBeforeLockingPiece then
+            generateNextPiece
+                { model
+                    | hasAlreadySwapped = False
+                    , numPiecesGenerated = model.numPiecesGenerated + 1
+                    , hasAlreadyWaitedBeforeLockingPiece = False
+                }
+
+        else
+            ( { model | hasAlreadyWaitedBeforeLockingPiece = True }, Cmd.none )
 
     else
         ( model, Cmd.none )
@@ -601,6 +607,7 @@ newGame windowSize =
       , heldPiece = Nothing
       , numPiecesGenerated = 1
       , hasAlreadySwapped = False
+      , hasAlreadyWaitedBeforeLockingPiece = False
       , playfield = emptyPlayfield
       , windowSize = windowSize
       }
@@ -1253,7 +1260,6 @@ subscriptions _ =
 
 
 {-
-   TODO Fix lockPiece and Tick logic, so there is time to move a piece left or right when it's at the bottom (i.e. so Tucks are possible)
    TODO Implement T-Spins
    TODO Implement Wall Kicks for one piece
    TODO Implement Wall Kicks for remaining pieces

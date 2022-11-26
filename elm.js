@@ -5893,6 +5893,7 @@ var $author$project$Main$newGame = function (windowSize) {
 		{
 			activePiece: $author$project$Main$initPieceTemp,
 			hasAlreadySwapped: false,
+			hasAlreadyWaitedBeforeLockingPiece: false,
 			heldPiece: $elm$core$Maybe$Nothing,
 			nextPieceQueue: $mgold$elm_nonempty_list$List$Nonempty$singleton($author$project$Main$initPieceTemp),
 			numPiecesGenerated: 1,
@@ -7252,10 +7253,14 @@ var $author$project$Main$isToppedOut = function (model) {
 	return $author$project$Main$isPieceAtTop(model) && $author$project$Main$isPieceStuck(model);
 };
 var $author$project$Main$maybeLockPiece = function (model) {
-	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? $author$project$Main$generateNextPiece(
+	return $author$project$Main$isToppedOut(model) ? $author$project$Main$newGame(model.windowSize) : ($author$project$Main$isPieceStuck(model) ? (model.hasAlreadyWaitedBeforeLockingPiece ? $author$project$Main$generateNextPiece(
 		_Utils_update(
 			model,
-			{hasAlreadySwapped: false, numPiecesGenerated: model.numPiecesGenerated + 1})) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+			{hasAlreadySwapped: false, hasAlreadyWaitedBeforeLockingPiece: false, numPiecesGenerated: model.numPiecesGenerated + 1})) : _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{hasAlreadyWaitedBeforeLockingPiece: true}),
+		$elm$core$Platform$Cmd$none)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 };
 var $author$project$Main$refreshPlayfieldHelper = F3(
 	function (oldPiece, newPiece_, playfield) {
@@ -7546,8 +7551,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Right),
 					$elm$core$Platform$Cmd$none);
 			case 'SoftDrop':
-				return $author$project$Main$maybeLockPiece(
-					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Down));
+				return _Utils_Tuple2(
+					A2($author$project$Main$maybeRefreshPlayfield, model, $author$project$Main$Down),
+					$elm$core$Platform$Cmd$none);
 			case 'HardDrop':
 				return $author$project$Main$generateNextPiece(
 					$author$project$Main$hardDrop(model));
