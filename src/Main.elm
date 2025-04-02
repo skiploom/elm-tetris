@@ -3,16 +3,15 @@ module Main exposing (..)
 import Array exposing (Array)
 import Browser
 import Browser.Events
-import Html exposing (Html, br, button, div, li, span, strong, text, ul)
+import Html exposing (Html, button, div, li, strong, text, ul)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Json.Decode
-import List.Extra
 import List.Nonempty exposing (Nonempty(..))
 import Random
 import Random.List
 import Svg
-import Svg.Attributes exposing (fill, height, rx, ry, stroke, strokeWidth, viewBox, width, x, y)
+import Svg.Attributes exposing (fill, height, stroke, strokeWidth, viewBox, width, x, y)
 import Time
 
 
@@ -20,6 +19,7 @@ import Time
 -- MAIN
 
 
+main : Program Json.Decode.Value Model Msg
 main =
     Browser.element { init = init, subscriptions = subscriptions, update = update, view = view }
 
@@ -161,7 +161,7 @@ update msg model =
         GenerateBag pieces ->
             ( { model | nextPieceQueue = List.Nonempty.append model.nextPieceQueue pieces }, Cmd.none )
 
-        Tick time ->
+        Tick _ ->
             maybeLockPiece (maybeRefreshPlayfield model Down)
 
         GotResizedWindow size ->
@@ -508,12 +508,11 @@ hardDrop model =
 -}
 hardDropHelper : Model -> Bool -> Int -> Int
 hardDropHelper model shouldContinue counter =
-    case shouldContinue of
-        True ->
-            hardDropHelper { model | activePiece = movePiece model.activePiece Down } (not (isPieceStuck model)) (counter + 1)
+    if shouldContinue then
+        hardDropHelper { model | activePiece = movePiece model.activePiece Down } (not (isPieceStuck model)) (counter + 1)
 
-        False ->
-            counter
+    else
+        counter
 
 
 maybeSwap : Model -> ( Model, Cmd Msg )
