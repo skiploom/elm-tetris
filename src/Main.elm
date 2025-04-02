@@ -1076,7 +1076,7 @@ spaceToColor space =
 
         Empty ->
             -- Gray
-            "#212121"
+            "#263238"
 
 
 showNextPieces : WindowSize -> Nonempty Piece -> Html Msg
@@ -1211,7 +1211,7 @@ showMiniPiece size shape =
             ( String.fromInt miniBlockHeight, String.fromInt viewBoxWidth, String.fromInt viewBoxHeight )
 
         buildMiniBlock ( a, b ) =
-            Svg.rect [ x (String.fromInt (a * miniBlockHeight + 11)), y (String.fromInt (b * miniBlockHeight + 1)), width h, height h, fill (spaceToColor (Filled shape)), stroke "#212121", strokeWidth "1" ] []
+            Svg.rect [ x (String.fromInt (a * miniBlockHeight + 11)), y (String.fromInt (b * miniBlockHeight + 1)), width h, height h, fill (spaceToColor (Filled shape)), stroke "#37474F", strokeWidth "1" ] []
 
         buildMiniPiece p1 p2 p3 p4 =
             Svg.svg [ width vW, height vH, viewBox (String.join " " [ "0", "0", vW, vH ]) ]
