@@ -1,168 +1,168 @@
 body {
-     background-color: #212121;
-     font-family: monospace;
-     color: #E0E0E0;
-     display: flex;
-     justify-content: center;
+  background-color: #212121;
+  font-family: monospace;
+  color: #e0e0e0;
+  display: flex;
+  justify-content: center;
 }
 
 .main {
-     display: grid;
-     grid-template-columns: 65px 230px 65px;
-     grid-template-rows: 150px 150px 150px 1fr;
+  display: grid;
+  grid-template-columns: 65px 230px 65px;
+  grid-template-rows: 150px 150px 150px 1fr;
 }
 
 .main--sm {
-     display: grid;
-     grid-template-columns: 125px 250px 125px;
-     grid-template-rows: 150px 150px 150px 1fr;
+  display: grid;
+  grid-template-columns: 125px 250px 125px;
+  grid-template-rows: 150px 150px 150px 1fr;
 }
 
 .playfield {
-     grid-column: 2;
-     grid-row: 1 / span 3;
-     justify-self: center;
-     border-width: 5px;
-     border-style: solid;
-     border-color: #AED581;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  justify-self: center;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #aed581;
 }
 
 .piece-preview {
-     height: 40px;
-     width: 55px;
-     text-align: center;
-     padding: 1px;
-     margin-bottom: 5px;
+  height: 40px;
+  width: 55px;
+  text-align: center;
+  padding: 1px;
+  margin-bottom: 5px;
 }
 
 .piece-preview--sm {
-     height: 50px;
-     width: 75px;
-     padding: 1px;
+  height: 50px;
+  width: 75px;
+  padding: 1px;
 }
 
 .piece-preview.piece-preview--hold {
-     grid-column: 1;
-     grid-row: 1;
-     justify-self: end;
-     border-style: solid;
-     border-width: 3px;
-     border-color: #AED581;
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  border-style: solid;
+  border-width: 3px;
+  border-color: #aed581;
 }
 
 .piece-previews {
-     grid-column: 3;
-     grid-row: 1 / span 2;
-     display: flex;
-     flex-direction: column;
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
 }
 
 .piece-preview.piece-preview--next {
-     border-style: solid;
-     border-width: 2px;
-     border-color: #757575;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #757575;
 }
 
 .piece-preview.piece-preview--later {
-     border-style: solid;
-     border-width: 1px;
-     border-color: #757575;
-     height: 25px;
-     width: 40px;
-     display: flex;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #757575;
+  height: 25px;
+  width: 40px;
+  display: flex;
 }
 
 .piece-preview--sm.piece-preview--later {
-     border-style: solid;
-     border-width: 1px;
-     border-color: #757575;
-     height: 40px;
-     width: 55px;
-     display: flex;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #757575;
+  height: 40px;
+  width: 55px;
+  display: flex;
 }
 .controls {
-     grid-column: 1 / span 3;
-     grid-row: 4;
-     justify-self: center;
+  grid-column: 1 / span 3;
+  grid-row: 4;
+  justify-self: center;
 }
 
 .line {
-     height: 22px;
+  height: 22px;
 }
 
 .line--sm {
-     height: 22px;
+  height: 22px;
 }
 
 .controls--mobile {
-     padding-top: 10px;
-     display: grid;
-     grid-template-columns: 180px auto 120px;
+  padding-top: 10px;
+  display: grid;
+  grid-template-columns: 180px auto 120px;
 }
 
 .controls--mobile button {
-     border: 0;
-     border-radius: 5px;
-     background-color: #AED581;
-     color: white;
+  border: 0;
+  border-radius: 5px;
+  background-color: #aed581;
+  color: white;
 }
 
 .controls--mobile > .directional-buttons {
-     grid-column: 1 / span 1;
-     display: grid;
-     grid-template-columns: repeat(3, 50px [col-start]);
-     grid-template-rows: repeat(3, 50px [col-start]);
+  grid-column: 1 / span 1;
+  display: grid;
+  grid-template-columns: repeat(3, 50px [col-start]);
+  grid-template-rows: repeat(3, 50px [col-start]);
 }
 
 .controls--mobile > .directional-buttons > #button-up {
-     grid-column: 2;
-     grid-row: 1;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .controls--mobile > .directional-buttons > #button-right {
-     grid-column: 3;
-     grid-row: 2;
+  grid-column: 3;
+  grid-row: 2;
 }
 
 .controls--mobile > .directional-buttons > #button-down {
-     grid-column: 2;
-     grid-row: 3;
+  grid-column: 2;
+  grid-row: 3;
 }
 
 .controls--mobile > .directional-buttons > #button-left {
-     grid-column: 1;
-     grid-row: 2;
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .controls--mobile > .action-buttons {
-     grid-column: 3;
-     display: flex;
-     flex-direction: column;
-     justify-content: space-evenly;
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
 .controls--mobile > .action-buttons > button {
-     height: 50px;
-     margin-bottom: 5px;
+  height: 50px;
+  margin-bottom: 5px;
 }
 
 .controls--keyboard {
-     display: flex;
+  display: flex;
 }
 
 .controls--keyboard > .keys {
-     display: flex;
-     flex-direction: column;
-     align-items: flex-start;
-     padding: 0;
-     list-style-type: none;
-     color: #AED581;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  list-style-type: none;
+  color: #aed581;
 }
 
 .controls--keyboard > .descriptions {
-     display: flex;
-     flex-direction: column;
-     align-items: flex-end;
-     list-style-type: none;
-     color: #E0E0E0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  list-style-type: none;
+  color: #e0e0e0;
 }
