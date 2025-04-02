@@ -1259,7 +1259,6 @@ subscriptions _ =
 
 
 {-
-   TODO Implement T-Spins
    TODO Implement Wall Kicks for one piece
    TODO Implement Wall Kicks for remaining pieces
    TODO Display number of lines cleared
